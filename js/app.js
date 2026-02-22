@@ -11,6 +11,11 @@ async function loadPage(page, options = {}) {
     const { initial = false } = options;
     if (isTransitioning) return;
 
+    document.body.classList.toggle('on-home', page === 'home');
+    document.body.dataset.page = page;
+    window.dispatchEvent(new CustomEvent("pagewillchange", {
+        detail: { page, initial }
+    }));
     isTransitioning = true;
 
     try {
@@ -22,6 +27,10 @@ async function loadPage(page, options = {}) {
         const res = await fetch(`content/${page}.html`);
         const html = await res.text();
         contentContainer.innerHTML = html;
+
+        window.dispatchEvent(new CustomEvent("pagechange", {
+            detail: { page }
+        }));
 
         requestAnimationFrame(() => {
             contentContainer.classList.remove('is-fading');

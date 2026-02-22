@@ -7,14 +7,10 @@
 
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="pre-intro">
 
     <!-- Navigation -->
     <nav>
-        <div class="logo" aria-label="Stasis Sound">
-            <img class="logo-mark" src="assets/logo.svg" alt="Stasis Sound logo">
-            <span class="logo-text">Stasis Sound</span>
-        </div>
         <ul>
             <li><a href="home.html" data-link="home">Home</a></li>
             <li><a href="works.html" data-link="works">Works</a></li>
@@ -27,6 +23,16 @@
     <!-- Background Layers -->
     <div class="texture-bg" aria-hidden="true"></div>
     <div id="particles-js" aria-hidden="true"></div>
+    <button id="intro-logo-trigger" aria-label="Start audio and intro animation"></button>
+
+    <!-- Center Hero Brand -->
+    <div class="brand-hero" aria-label="Stasis Sound">
+        <div class="logo">
+            <span class="logo-word logo-word-left" aria-hidden="true">stasis</span>
+            <img class="logo-mark" src="assets/logo.svg" alt="Stasis Sound logo">
+            <span class="logo-word logo-word-right" aria-hidden="true">sound</span>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main id="content"></main>
@@ -46,6 +52,7 @@
     <script src="js/ambient-particles.js"></script>
     <script src="js/app.js"></script>
     <script src="js/player.js"></script>
+    <script src="js/ui-sounds.js"></script>
 
 
 
