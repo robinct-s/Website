@@ -1,0 +1,159 @@
+/* =======================
+   GLOBAL RESET & BODY
+======================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: #0b0f14;   /* dark ambient background */
+    color: #ffffff;
+    overflow: hidden;       /* prevent scrollbars */
+}
+
+/* =======================
+   NAVIGATION
+======================= */
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    z-index: 10;
+    background: rgba(11, 15, 20, 0.6); /* subtle dark overlay */
+    backdrop-filter: blur(5px);
+}
+
+nav .logo {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+nav ul {
+    display: flex;
+    gap: 30px;
+    list-style: none;
+}
+
+nav a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    transition: opacity 0.3s ease;
+}
+
+nav a:hover {
+    opacity: 0.6;
+}
+
+/* =======================
+   PARTICLE BACKGROUND
+======================= */
+#particles-js {
+    position: absolute;
+    width: 100%;
+    height: 100vh;
+    z-index: 0;
+}
+
+/* =======================
+   MAIN CONTENT CONTAINER
+======================= */
+main#content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100vh;
+    z-index: 2; /* above particles */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+/* =======================
+   HERO / HOMEPAGE
+======================= */
+.hero {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.hero h1 {
+    font-size: 4rem;
+    letter-spacing: 6px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    opacity: 0.7;
+}
+
+/* =======================
+   PLAYER
+======================= */
+.player {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10;
+}
+
+.player audio {
+    background: #111;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+/* =======================
+   CONTENT SECTIONS
+======================= */
+#content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+#content h3 {
+    font-size: 1.8rem;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+#content p {
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 700px;
+    margin: 0 auto 15px auto;
+    color: #cccccc;
+}
+
+/* =======================
+   RESPONSIVE
+======================= */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 3rem;
+    }
+    .hero p {
+        font-size: 1rem;
+    }
+
+    nav ul {
+        gap: 20px;
+    }
+}
