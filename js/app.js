@@ -1,14 +1,38 @@
 const contentContainer = document.getElementById('content');
+const TRANSITION_OUT_MS = 1200;
+let isTransitioning = false;
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // Load a page snippet
-async function loadPage(page) {
-    const res = await fetch(`content/${page}.html`);
-    const html = await res.text();
-    contentContainer.innerHTML = html;
+async function loadPage(page, options = {}) {
+    const { initial = false } = options;
+    if (isTransitioning) return;
+
+    isTransitioning = true;
+
+    try {
+        if (!initial) {
+            contentContainer.classList.add('is-fading');
+            await wait(TRANSITION_OUT_MS);
+        }
+
+        const res = await fetch(`content/${page}.html`);
+        const html = await res.text();
+        contentContainer.innerHTML = html;
+
+        requestAnimationFrame(() => {
+            contentContainer.classList.remove('is-fading');
+        });
+    } finally {
+        isTransitioning = false;
+    }
 }
 
 // Initial load
-loadPage('home');
+loadPage('home', { initial: true });
 
 // Navigation links
 document.querySelectorAll('nav a').forEach(link => {

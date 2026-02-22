@@ -11,7 +11,10 @@
 
     <!-- Navigation -->
     <nav>
-        <div class="logo">Stasis Sound</div>
+        <div class="logo" aria-label="Stasis Sound">
+            <img class="logo-mark" src="assets/logo.svg" alt="Stasis Sound logo">
+            <span class="logo-text">Stasis Sound</span>
+        </div>
         <ul>
             <li><a href="home.html" data-link="home">Home</a></li>
             <li><a href="works.html" data-link="works">Works</a></li>
@@ -21,8 +24,9 @@
         </ul>
     </nav>
 
-    <!-- Particles Background -->
-    <div id="particles-js"></div>
+    <!-- Background Layers -->
+    <div class="texture-bg" aria-hidden="true"></div>
+    <div id="particles-js" aria-hidden="true"></div>
 
     <!-- Main Content -->
     <main id="content"></main>
@@ -39,8 +43,7 @@
 <audio id="music-player" preload="auto"></audio>
 
     <!-- JS Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <script src="js/particles-config.js"></script>
+    <script src="js/ambient-particles.js"></script>
     <script src="js/app.js"></script>
     <script src="js/player.js"></script>
 
