@@ -20,11 +20,11 @@ document.querySelectorAll('nav a').forEach(link => {
 });
 
 // Persistent player state using localStorage
-const player = document.getElementById("music-player");
+const audioE1 = document.getElementById("music-player");
 window.addEventListener("load", () => {
     const savedTime = localStorage.getItem("player-time");
-    if (savedTime) player.currentTime = parseFloat(savedTime);
+    if (savedTime) audioE1.currentTime = parseFloat(savedTime);
 });
 setInterval(() => {
-    localStorage.setItem("player-time", player.currentTime);
+    localStorage.setItem("player-time", audioE1.currentTime);
 }, 1000);
