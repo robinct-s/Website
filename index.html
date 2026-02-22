@@ -27,103 +27,24 @@
     <!-- Main Content -->
     <main id="content"></main>
 
- <!-- Music Player -->
+<!-- Music Player -->
 <div class="player">
     <button id="prev-track">⏮</button>
     <button id="play-pause">▶</button>
+    <span id="track-title">Loading...</span>
     <button id="next-track">⏭</button>
-    <span id="track-title">Track Name</span>
     <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5">
 </div>
 
-<audio id="music-player"></audio>
+<audio id="music-player" preload="auto"></audio>
 
     <!-- JS Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="js/particles-config.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/player.js"></script>
 
-<!-- SPA Playlist Music Player -->
-<script>
-///////////////////////////
-// Persistent SPA Player //
-///////////////////////////
 
-// Playlist: add your MP3 files here
-const playlist = [
-    "music/Limit_Demo.mp3",
-    "music/Reboot.mp3",
-    "music/Sora_Blue.mp3"
-];
-
-const trackNames = [
-    "Limit_Demo",
-    "Reboot",
-    "Sora_Blue"
-];
-
-const player = document.getElementById("music-player");
-const trackTitle = document.getElementById("track-title");
-const playPauseBtn = document.getElementById("play-pause");
-const nextBtn = document.getElementById("next-track");
-const prevBtn = document.getElementById("prev-track");
-const volumeSlider = document.getElementById("volume-slider");
-
-let currentTrack = 0;
-let isPlaying = false;
-
-function loadTrack(index) {
-    currentTrack = index;
-    player.src = playlist[currentTrack];
-    trackTitle.textContent = trackNames[currentTrack];
-    if (isPlaying) player.play();
-}
-
-// Initial load
-loadTrack(currentTrack);
-
-// Play / Pause
-playPauseBtn.addEventListener("click", () => {
-    if (player.paused) {
-        player.play();
-        isPlaying = true;
-        playPauseBtn.textContent = "⏸";
-    } else {
-        player.pause();
-        isPlaying = false;
-        playPauseBtn.textContent = "▶";
-    }
-});
-
-// Next / Previous
-nextBtn.addEventListener("click", () => {
-    currentTrack = (currentTrack + 1) % playlist.length;
-    loadTrack(currentTrack);
-    player.play();
-    isPlaying = true;
-    playPauseBtn.textContent = "⏸";
-});
-
-prevBtn.addEventListener("click", () => {
-    currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
-    loadTrack(currentTrack);
-    player.play();
-    isPlaying = true;
-    playPauseBtn.textContent = "⏸";
-});
-
-// Track ends → next track
-player.addEventListener("ended", () => {
-    currentTrack = (currentTrack + 1) % playlist.length;
-    loadTrack(currentTrack);
-    player.play();
-});
-
-// Volume control
-volumeSlider.addEventListener("input", () => {
-    player.volume = volumeSlider.value;
-});
-</script>
 
 </body>
 </html>
