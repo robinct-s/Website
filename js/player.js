@@ -3,15 +3,23 @@
 // ========================
 
 const playlist = [
-    "music/Limit_Demo.mp3",
+    "music/Limit.mp3",
     "music/Reboot.mp3",
-    "music/Sora_Blue.mp3"
+    "music/Frozen Filter.mp3",
+    "music/Mist Shield.mp3",
+    "music/Way Home.mp3",
+    "music/Stargazing.mp3",
+    "music/Beyond.mp3"
 ];
 
 const trackNames = [
-    "Limit_Demo",
+    "Limit",
     "Reboot",
-    "Sora_Blue"
+    "Frozen Filter",
+    "Mist Shield",
+    "Way Home",
+    "Stargazing",
+    "Beyond"
 ];
 
 const player = document.getElementById("music-player");
@@ -25,11 +33,46 @@ const introLogoTrigger = document.getElementById("intro-logo-trigger");
 const AUDIO_FADE_IN_MS = 1800;
 const INTRO_CLICK_ANIM_MS = 1050;
 const INTRO_SWAP_DELAY_MS = 1410;
+const INTRO_SWAP_AFTER_CLICK_ANIM_MS = INTRO_SWAP_DELAY_MS - INTRO_CLICK_ANIM_MS;
 
 let currentTrack = 0;
 let isPlaying = false;
 let introStarted = false;
 let fadeVolumeFrame = null;
+let introTransitionScheduled = false;
+let introCompletionScheduled = false;
+let introTransitionTimer = null;
+let introCompletionTimer = null;
+
+function clearIntroTimers() {
+    if (introTransitionTimer !== null) {
+        clearTimeout(introTransitionTimer);
+        introTransitionTimer = null;
+    }
+    if (introCompletionTimer !== null) {
+        clearTimeout(introCompletionTimer);
+        introCompletionTimer = null;
+    }
+}
+
+function beginIntroTransition() {
+    if (introTransitionScheduled) return;
+    introTransitionScheduled = true;
+    document.body.classList.add("intro-transition");
+}
+
+function completeIntro() {
+    if (introCompletionScheduled) return;
+    introCompletionScheduled = true;
+    clearIntroTimers();
+    document.body.classList.remove("pre-intro");
+    document.body.classList.remove("intro-clicked");
+    document.body.classList.remove("intro-transition");
+    document.body.classList.add("intro-started");
+    window.dispatchEvent(new CustomEvent("introanimationcomplete", {
+        detail: { page: "home" }
+    }));
+}
 
 function cancelVolumeFade() {
     if (fadeVolumeFrame !== null) {
@@ -64,19 +107,23 @@ function playWithFadeIn(durationMs = AUDIO_FADE_IN_MS) {
 function startIntro() {
     if (introStarted) return;
     introStarted = true;
+    introTransitionScheduled = false;
+    introCompletionScheduled = false;
+    clearIntroTimers();
     document.body.classList.add("intro-clicked");
-    window.setTimeout(() => {
-        document.body.classList.add("intro-transition");
-    }, INTRO_CLICK_ANIM_MS);
-    window.setTimeout(() => {
-        document.body.classList.remove("pre-intro");
-        document.body.classList.remove("intro-clicked");
-        document.body.classList.remove("intro-transition");
-        document.body.classList.add("intro-started");
-        window.dispatchEvent(new CustomEvent("introanimationcomplete", {
-            detail: { page: "home" }
-        }));
-    }, INTRO_SWAP_DELAY_MS);
+
+    // Prefer visual event sync; keep timer fallbacks so desktop behavior stays unchanged.
+    if (introLogoTrigger) {
+        introLogoTrigger.addEventListener("animationend", (event) => {
+            if (event.animationName !== "intro-logo-pulse-shrink") return;
+            beginIntroTransition();
+            if (introCompletionTimer !== null) clearTimeout(introCompletionTimer);
+            introCompletionTimer = window.setTimeout(completeIntro, INTRO_SWAP_AFTER_CLICK_ANIM_MS);
+        }, { once: true });
+    }
+
+    introTransitionTimer = window.setTimeout(beginIntroTransition, INTRO_CLICK_ANIM_MS);
+    introCompletionTimer = window.setTimeout(completeIntro, INTRO_SWAP_DELAY_MS);
 }
 
 // ---------- Load Track ----------

@@ -7,9 +7,14 @@
     host.appendChild(canvas);
 
     const pointer = { x: 0, y: 0, active: false };
+    const brandHero = document.querySelector(".brand-hero");
+    const brandLogo = document.querySelector(".brand-hero .logo");
     const particles = [];
     const particleCount = 90;
     const INTERFERENCE_MIN_INTERVAL_MS = 75;
+    const BASE_BLACK = { r: 17, g: 17, b: 17 };
+    const NATURAL_GREEN = { r: 126, g: 174, b: 124 };
+    const WHITE = { r: 255, g: 255, b: 255 };
     let width = 0;
     let height = 0;
     let rafId = null;
@@ -20,13 +25,26 @@
         return Math.random() * (max - min) + min;
     }
 
+    function clamp01(value) {
+        return Math.max(0, Math.min(1, value));
+    }
+
+    function mixChannel(a, b, t) {
+        return Math.round(a + (b - a) * t);
+    }
+
+    function isIntroLockedFormation() {
+        return document.body.classList.contains("pre-intro") &&
+            !document.body.classList.contains("intro-clicked");
+    }
+
     function createParticle(index) {
         return {
             i: index,
             x: rand(0, width),
             y: rand(0, height),
-            radius: rand(0.7, 2.8),
-            alpha: rand(0.08, 0.26),
+            radius: rand(0.9, 3.2),
+            alpha: rand(0.18, 0.48),
             vx: rand(-0.16, 0.16),
             vy: rand(-0.12, 0.2),
             drift: rand(0.0006, 0.0022),
@@ -96,9 +114,16 @@
             }
             case "home":
             default: {
-                const cloud = Math.min(width, height) * (0.1 + p.homeRadius * 0.28);
-                tx = cx + Math.cos(p.homeAngle) * cloud;
-                ty = cy + Math.sin(p.homeAngle) * cloud * 0.72;
+                if (isIntroLockedFormation()) {
+                    const ring = Math.min(width, height) * (0.045 + p.homeRadius * 0.06);
+                    const angle = p.homeAngle + time * 0.00035;
+                    tx = cx + Math.cos(angle) * ring;
+                    ty = cy + Math.sin(angle) * ring;
+                } else {
+                    const cloud = Math.min(width, height) * (0.1 + p.homeRadius * 0.28);
+                    tx = cx + Math.cos(p.homeAngle) * cloud;
+                    ty = cy + Math.sin(p.homeAngle) * cloud * 0.72;
+                }
                 break;
             }
         }
@@ -107,6 +132,30 @@
             x: tx + p.jitterX * 0.24 + sway,
             y: ty + p.jitterY * 0.24 + breathe
         };
+    }
+
+    function updateBrandTint() {
+        if (!brandHero || !brandLogo) return;
+
+        let tintMix = 0;
+        if (pointer.active) {
+            const rect = brandLogo.getBoundingClientRect();
+            const centerX = rect.left + rect.width * 0.5;
+            const centerY = rect.top + rect.height * 0.5;
+            const distance = Math.hypot(pointer.x - centerX, pointer.y - centerY);
+            const reactionRadius = Math.max(220, Math.max(rect.width, rect.height) * 2.6);
+            const falloff = clamp01(1 - distance / reactionRadius);
+            tintMix = falloff * falloff;
+        }
+
+        const tintStrength = clamp01(tintMix * 0.85);
+        const tintR = mixChannel(BASE_BLACK.r, NATURAL_GREEN.r, tintStrength);
+        const tintG = mixChannel(BASE_BLACK.g, NATURAL_GREEN.g, tintStrength);
+        const tintB = mixChannel(BASE_BLACK.b, NATURAL_GREEN.b, tintStrength);
+
+        brandHero.style.setProperty("--brand-tint-r", `${tintR}`);
+        brandHero.style.setProperty("--brand-tint-g", `${tintG}`);
+        brandHero.style.setProperty("--brand-tint-b", `${tintB}`);
     }
 
     function animate(time) {
@@ -131,12 +180,14 @@
             const interactionRadius = 170;
             let reactX = 0;
             let reactY = 0;
+            let whitenByProximity = 0;
 
             if (distance < interactionRadius) {
                 const falloff = 1 - distance / interactionRadius;
                 const force = falloff * falloff * 0.8;
                 reactX = (dx / distance) * force;
                 reactY = (dy / distance) * force;
+                whitenByProximity = clamp01(falloff * falloff * 1.4);
                 if (pointer.active && force > 0.04) {
                     interferenceCount += 1;
                     if (force > maxInterferenceForce) {
@@ -153,7 +204,21 @@
             if (p.y < -10) p.y = height + 10;
             if (p.y > height + 10) p.y = -10;
 
+            const gradientSeed = clamp01((Math.sin(p.i * 0.25 + p.phase * 0.8) + 1) * 0.5);
+            const whiteMix = clamp01(gradientSeed * 0.5 + (pointer.active ? whitenByProximity : 0));
+            const red = mixChannel(NATURAL_GREEN.r, WHITE.r, whiteMix);
+            const green = mixChannel(NATURAL_GREEN.g, WHITE.g, whiteMix);
+            const blue = mixChannel(NATURAL_GREEN.b, WHITE.b, whiteMix);
+
+            const glowAlpha = Math.min(1, p.alpha * 0.42);
+            ctx.globalAlpha = glowAlpha;
+            ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius * 2.1, 0, Math.PI * 2);
+            ctx.fill();
+
             ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
             ctx.fill();
@@ -184,6 +249,8 @@
         ctx.globalAlpha = 0.35;
         ctx.fillStyle = haze;
         ctx.fillRect(0, 0, width, height);
+
+        updateBrandTint();
 
         ctx.globalAlpha = 1;
         rafId = requestAnimationFrame(animate);
