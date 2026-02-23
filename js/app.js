@@ -1,4 +1,5 @@
 const contentContainer = document.getElementById('content');
+const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
 const TRANSITION_OUT_MS = 1200;
 let isTransitioning = false;
 
@@ -48,8 +49,38 @@ document.querySelectorAll('nav a').forEach(link => {
     link.addEventListener('click', e => {
         e.preventDefault();
         const page = link.dataset.link;
+        closeMobileMenu();
         loadPage(page);
     });
+});
+
+function openMobileMenu() {
+    document.body.classList.add('menu-open');
+    if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
+}
+
+function closeMobileMenu() {
+    document.body.classList.remove('menu-open');
+    if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
+}
+
+if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener('click', () => {
+        const isOpen = document.body.classList.contains('menu-open');
+        if (isOpen) closeMobileMenu();
+        else openMobileMenu();
+    });
+}
+
+document.addEventListener('click', event => {
+    if (!document.body.classList.contains('menu-open')) return;
+    const clickedInsideNav = event.target.closest('#site-nav-list');
+    const clickedToggle = event.target.closest('.mobile-menu-toggle');
+    if (!clickedInsideNav && !clickedToggle) closeMobileMenu();
+});
+
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) closeMobileMenu();
 });
 
 // Persistent player state using localStorage
