@@ -1,3 +1,25 @@
-<div class="hero">
-    <p>Audio Design &middot; Composition &middot; Spatial Systems</p>
+<div class="home-shell">
+    <ol id="visitor-feed" class="visitor-feed visitor-feed-floating"></ol>
+
+    <section class="visitors-panel" aria-labelledby="visitors-title">
+        <div class="visitors-head">
+            <h3 id="visitors-title">Visitors</h3>
+        </div>
+        <form id="visitor-form" class="visitor-form" autocomplete="off">
+            <label class="visitor-field">
+                <span>Name (set once)</span>
+                <input id="visitor-name" name="visitor-name" type="text" maxlength="24" required>
+            </label>
+            <label class="visitor-field">
+                <span>Comment</span>
+                <textarea id="visitor-message" name="visitor-message" rows="3" maxlength="220" required></textarea>
+            </label>
+            <button id="visitor-submit" type="submit" data-ui-sound="player">Post</button>
+            <p id="visitor-note" class="visitor-note" aria-live="polite"></p>
+        </form>
+    </section>
+
+    <div class="hero">
+        <p>Audio Design &middot; Composition &middot; Spatial Systems</p>
+    </div>
 </div>

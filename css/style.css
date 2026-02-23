@@ -342,6 +342,265 @@ main#content.hide-home-tagline .hero p {
     transition: none !important;
 }
 
+.home-shell {
+    width: min(1220px, 100%);
+    min-height: 0;
+    margin: 0 auto;
+    position: relative;
+}
+
+.home-shell .hero {
+    margin-top: 190px;
+    position: relative;
+    min-height: 0;
+    display: block;
+    pointer-events: auto;
+}
+
+.visitors-panel {
+    width: min(186px, 17vw);
+    position: fixed;
+    left: clamp(12px, 2.2vw, 30px);
+    top: 74%;
+    transform: translateY(-50%);
+    border: 1px solid rgba(17, 17, 17, 0.14);
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.24),
+        rgba(244, 248, 244, 0.1)
+    );
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    padding: 6px 6px 5px;
+    text-align: left;
+    z-index: 4;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.visitors-panel::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+    background: radial-gradient(
+        circle at 0% 25%,
+        rgba(126, 174, 124, 0.14),
+        rgba(126, 174, 124, 0) 52%
+    );
+    opacity: 0.8;
+    z-index: -1;
+}
+
+.visitors-panel::after {
+    content: "";
+    position: absolute;
+    inset: -46px;
+    background: radial-gradient(
+        circle at var(--mx, 50%) var(--my, 50%),
+        rgba(126, 174, 124, 0.2),
+        rgba(126, 174, 124, 0) 62%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+}
+
+.visitors-panel:hover::after {
+    opacity: 1;
+}
+
+.visitors-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.visitors-head h3 {
+    margin: 0;
+    font-size: 0.61rem;
+    letter-spacing: 1.05px;
+    text-transform: uppercase;
+    color: rgba(17, 17, 17, 0.75);
+}
+
+.visitors-meta {
+    font-size: 0.62rem;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    color: rgba(17, 17, 17, 0.42);
+}
+
+.visitor-form {
+    display: grid;
+    gap: 4px;
+}
+
+.visitor-field {
+    display: grid;
+    gap: 2px;
+}
+
+.visitor-field span {
+    font-size: 0.5rem;
+    letter-spacing: 0.75px;
+    text-transform: uppercase;
+    color: rgba(17, 17, 17, 0.58);
+}
+
+.visitor-field input,
+.visitor-field textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 0.62rem;
+    border: 1px solid rgba(17, 17, 17, 0.14);
+    background: rgba(255, 255, 255, 0.42);
+    color: #111111;
+    padding: 3px 4px;
+    outline: none;
+    resize: vertical;
+    min-height: 22px;
+}
+
+.visitor-field textarea {
+    min-height: 46px;
+    line-height: 1.25;
+}
+
+.visitor-field input[readonly] {
+    color: rgba(17, 17, 17, 0.66);
+    background: rgba(245, 245, 245, 0.48);
+}
+
+.visitor-field input:focus,
+.visitor-field textarea:focus {
+    border-color: rgba(126, 174, 124, 0.72);
+}
+
+#visitor-submit {
+    justify-self: start;
+    border: 1px solid rgba(17, 17, 17, 0.16);
+    background: rgba(255, 255, 255, 0.5);
+    color: rgba(17, 17, 17, 0.9);
+    font: inherit;
+    text-transform: uppercase;
+    font-size: 0.54rem;
+    letter-spacing: 0.95px;
+    padding: 3px 6px;
+    cursor: pointer;
+}
+
+#visitor-submit:hover {
+    border-color: rgba(126, 174, 124, 0.7);
+    background: rgba(255, 255, 255, 0.66);
+}
+
+.visitor-note {
+    margin: 0;
+    min-height: 1.1em;
+    font-size: 0.54rem;
+    letter-spacing: 0.3px;
+    color: rgba(17, 17, 17, 0.62);
+}
+
+.visitor-feed {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 5px;
+    max-height: min(44vh, 300px);
+    overflow: auto;
+    background: transparent;
+}
+
+.visitor-feed-floating {
+    width: min(42vw, 560px);
+    position: fixed;
+    left: clamp(12px, 2.2vw, 30px);
+    top: calc(74% + 172px);
+    transform: none;
+    bottom: 10px;
+    z-index: 4;
+    margin: 0;
+    height: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: flex-start;
+    justify-content: flex-start;
+    gap: 5px 10px;
+    padding: 5px 6px 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    pointer-events: auto;
+}
+
+.visitor-entry {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    white-space: normal;
+    max-width: min(32vw, 430px);
+}
+
+.visitor-entry::before {
+    content: none;
+}
+
+.visitor-entry-head {
+    display: contents;
+    margin-bottom: 0;
+}
+
+.visitor-entry-name {
+    font-size: 0.67rem;
+    line-height: 1.1;
+    letter-spacing: 0.3px;
+    color: rgba(22, 39, 22, 0.98);
+    order: 1;
+}
+
+.visitor-entry-time {
+    font-size: 0.67rem;
+    line-height: 1.1;
+    letter-spacing: 0.3px;
+    text-transform: none;
+    color: rgba(22, 39, 22, 0.98);
+    white-space: nowrap;
+    order: 3;
+}
+
+.visitor-entry-message {
+    font-size: 0.67rem;
+    line-height: 1.1;
+    letter-spacing: 0.3px;
+    color: rgba(22, 39, 22, 0.98);
+    word-break: break-word;
+    order: 2;
+}
+
+#content .visitor-entry-name,
+#content .visitor-entry-message,
+#content .visitor-entry-time {
+    font-size: 0.67rem;
+    line-height: 1.1;
+    color: rgba(22, 39, 22, 0.98);
+    margin: 0;
+}
+
 /* =======================
    PLAYER
 ======================= */
@@ -877,6 +1136,16 @@ body.pre-intro .player {
     color: rgba(17, 17, 17, 0.84);
 }
 
+.track-variant {
+    color: rgba(17, 17, 17, 0.72);
+    letter-spacing: 0.28px;
+}
+
+.track-feature {
+    color: rgba(17, 17, 17, 0.62);
+    letter-spacing: 0.35px;
+}
+
 .track-time {
     font-size: 0.79rem;
     letter-spacing: 0.55px;
@@ -1390,7 +1659,8 @@ body.safari-perf .live-item,
 body.safari-perf .sd-card,
 body.safari-perf .sd-column,
 body.safari-perf .about-column,
-body.safari-perf .about-link {
+body.safari-perf .about-link,
+body.safari-perf .visitors-panel {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
 }
@@ -1405,7 +1675,8 @@ body.safari-perf .live-item,
 body.safari-perf .sd-card,
 body.safari-perf .sd-column,
 body.safari-perf .about-column,
-body.safari-perf .about-link {
+body.safari-perf .about-link,
+body.safari-perf .visitors-panel {
     background: linear-gradient(
         130deg,
         rgba(255, 255, 255, 0.5),
@@ -1544,6 +1815,27 @@ body.safari-perf .about-link {
 
     .hero {
         margin-top: 112px;
+    }
+
+    .home-shell {
+        width: 100%;
+        min-height: auto;
+    }
+
+    .home-shell .hero {
+        position: relative;
+        inset: auto;
+        display: block;
+        pointer-events: auto;
+        margin-top: 112px;
+    }
+
+    .visitors-panel {
+        display: none;
+    }
+
+    .visitor-feed-floating {
+        display: none;
     }
 
     .works-shell {

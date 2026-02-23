@@ -19,6 +19,10 @@
     const INTERFERENCE_MIN_INTERVAL_MS = IS_SAFARI ? 120 : 75;
     const BEACON_PROXIMITY_MIN_INTERVAL_MS = 120;
     const TARGET_FRAME_MS = IS_SAFARI ? 22 : 0;
+    const SCROLL_INPUT_GAIN = 0.0135;
+    const SCROLL_FORCE_MAX = 6.8;
+    const PARTICLE_SCROLL_INFLUENCE = 1.45;
+    const BEACON_SCROLL_INFLUENCE = 0.7;
     const BASE_BLACK = { r: 17, g: 17, b: 17 };
     const NATURAL_GREEN = { r: 126, g: 174, b: 124 };
     const WHITE = { r: 255, g: 255, b: 255 };
@@ -202,7 +206,7 @@
         beacon.nearMix = nearMix;
 
         beacon.x += beacon.vx + Math.sin(beacon.phase) * 0.26 + toTargetX + reactX;
-        beacon.y += beacon.vy + Math.cos(beacon.phase * 1.15) * 0.2 + toTargetY + reactY + scrollForceY * 0.28;
+        beacon.y += beacon.vy + Math.cos(beacon.phase * 1.15) * 0.2 + toTargetY + reactY + scrollForceY * BEACON_SCROLL_INFLUENCE;
 
         if (beacon.x < -20) beacon.x = width + 20;
         if (beacon.x > width + 20) beacon.x = -20;
@@ -313,7 +317,8 @@
             }
 
             p.x += p.vx + Math.sin(p.phase) * 0.12 + pullX + reactX + toTargetX;
-            p.y += p.vy + Math.cos(p.phase * 1.25) * 0.08 + pullY + reactY + toTargetY + scrollDrift * (0.65 + p.homeRadius * 0.7);
+            p.y += p.vy + Math.cos(p.phase * 1.25) * 0.08 + pullY + reactY + toTargetY +
+                scrollDrift * (0.65 + p.homeRadius * 0.7) * PARTICLE_SCROLL_INFLUENCE;
 
             if (p.x < -10) p.x = width + 10;
             if (p.x > width + 10) p.x = -10;
@@ -397,7 +402,7 @@
         pointerOverUi = !!(
             target &&
             target.closest &&
-            target.closest("nav a, summary, .release-panel, .live-item, .about-link, button, input, .player, .mobile-menu-toggle, #intro-logo-trigger")
+            target.closest("nav a, summary, .release-panel, .live-item, .about-link, .visitors-panel, button, input, textarea, .player, .mobile-menu-toggle, #intro-logo-trigger")
         );
     });
 
@@ -418,7 +423,7 @@
 
     window.addEventListener("wheel", (event) => {
         const delta = clamp(event.deltaY, -140, 140);
-        scrollForceY = clamp(scrollForceY + delta * 0.006, -3, 3);
+        scrollForceY = clamp(scrollForceY + delta * SCROLL_INPUT_GAIN, -SCROLL_FORCE_MAX, SCROLL_FORCE_MAX);
     }, { passive: true });
 
     window.addEventListener("pagechange", (event) => {

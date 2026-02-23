@@ -82,7 +82,20 @@
         const tracks = makeTag("ol", "release-tracks");
         (release.tracks || []).forEach((track) => {
             const item = document.createElement("li");
-            item.appendChild(makeTag("span", "track-name", track.title || ""));
+            const name = makeTag("span", "track-name", track.title || "");
+            const featured = Array.isArray(track.featuredArtists)
+                ? track.featuredArtists.join(", ")
+                : (track.featuredArtists || "");
+            const variants = [];
+            if (track.remixBy) variants.push(`${track.remixBy} Remix`);
+            if (track.kenjaRebuildBy) variants.push(`${track.kenjaRebuildBy} Kenja Rebuild`);
+            if (variants.length > 0) {
+                name.appendChild(makeTag("span", "track-variant", ` ${variants.join(", ")}`));
+            }
+            if (featured) {
+                name.appendChild(makeTag("span", "track-feature", ` (+ ${featured})`));
+            }
+            item.appendChild(name);
             item.appendChild(makeTag("span", "track-time", track.duration || ""));
             tracks.appendChild(item);
         });
