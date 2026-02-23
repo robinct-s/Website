@@ -1,6 +1,11 @@
 (function () {
     const host = document.getElementById("particles-js");
     if (!host) return;
+    const ua = navigator.userAgent || "";
+    const vendor = navigator.vendor || "";
+    const IS_SAFARI = /Apple/i.test(vendor) &&
+        /Safari/i.test(ua) &&
+        !/Chrome|CriOS|Chromium|Edg|OPR|Firefox|FxiOS|SamsungBrowser/i.test(ua);
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -10,9 +15,10 @@
     const brandHero = document.querySelector(".brand-hero");
     const brandLogo = document.querySelector(".brand-hero .logo");
     const particles = [];
-    const particleCount = 90;
-    const INTERFERENCE_MIN_INTERVAL_MS = 75;
+    const particleCount = IS_SAFARI ? 58 : 90;
+    const INTERFERENCE_MIN_INTERVAL_MS = IS_SAFARI ? 120 : 75;
     const BEACON_PROXIMITY_MIN_INTERVAL_MS = 120;
+    const TARGET_FRAME_MS = IS_SAFARI ? 22 : 0;
     const BASE_BLACK = { r: 17, g: 17, b: 17 };
     const NATURAL_GREEN = { r: 126, g: 174, b: 124 };
     const WHITE = { r: 255, g: 255, b: 255 };
@@ -23,9 +29,11 @@
     let currentPage = "home";
     let lastInterferenceAt = 0;
     let lastBeaconProximityAt = 0;
+    let lastFrameAt = 0;
     let scrollForceY = 0;
     let pointerOverUi = false;
     let beacon = null;
+    let tintFrame = 0;
 
     function rand(min, max) {
         return Math.random() * (max - min) + min;
@@ -260,6 +268,11 @@
     }
 
     function animate(time) {
+        if (TARGET_FRAME_MS > 0 && time - lastFrameAt < TARGET_FRAME_MS) {
+            rafId = requestAnimationFrame(animate);
+            return;
+        }
+        lastFrameAt = time;
         ctx.clearRect(0, 0, width, height);
         ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
         let interferenceCount = 0;
@@ -280,7 +293,7 @@
             const dx = p.x - pointer.x;
             const dy = p.y - pointer.y;
             const distance = Math.hypot(dx, dy) || 0.0001;
-            const interactionRadius = 170;
+            const interactionRadius = IS_SAFARI ? 148 : 170;
             let reactX = 0;
             let reactY = 0;
             let whitenByProximity = 0;
@@ -313,11 +326,11 @@
             const green = mixChannel(NATURAL_GREEN.g, WHITE.g, whiteMix);
             const blue = mixChannel(NATURAL_GREEN.b, WHITE.b, whiteMix);
 
-            const glowAlpha = Math.min(1, p.alpha * 0.42);
+            const glowAlpha = Math.min(1, p.alpha * (IS_SAFARI ? 0.24 : 0.42));
             ctx.globalAlpha = glowAlpha;
             ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
             ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius * 2.1, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, p.radius * (IS_SAFARI ? 1.65 : 2.1), 0, Math.PI * 2);
             ctx.fill();
 
             ctx.globalAlpha = p.alpha;
@@ -349,15 +362,24 @@
             lastInterferenceAt = time;
         }
 
-        const haze = ctx.createLinearGradient(0, 0, width, height);
-        haze.addColorStop(0, "rgba(255, 255, 255, 0)");
-        haze.addColorStop(0.45, "rgba(255, 255, 255, 0.08)");
-        haze.addColorStop(1, "rgba(255, 255, 255, 0)");
-        ctx.globalAlpha = 0.35;
-        ctx.fillStyle = haze;
-        ctx.fillRect(0, 0, width, height);
+        if (!IS_SAFARI) {
+            const haze = ctx.createLinearGradient(0, 0, width, height);
+            haze.addColorStop(0, "rgba(255, 255, 255, 0)");
+            haze.addColorStop(0.45, "rgba(255, 255, 255, 0.08)");
+            haze.addColorStop(1, "rgba(255, 255, 255, 0)");
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = haze;
+            ctx.fillRect(0, 0, width, height);
+        } else {
+            ctx.globalAlpha = 0.16;
+            ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+            ctx.fillRect(0, 0, width, height);
+        }
 
-        updateBrandTint();
+        if (!IS_SAFARI || tintFrame % 2 === 0) {
+            updateBrandTint();
+        }
+        tintFrame += 1;
 
         ctx.globalAlpha = 1;
         rafId = requestAnimationFrame(animate);

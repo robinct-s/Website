@@ -772,6 +772,17 @@ body.pre-intro .player {
     filter: contrast(1.02) saturate(0.92);
 }
 
+@media (min-width: 769px) and (hover: hover) and (pointer: fine) {
+    .release-art-image {
+        transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        transform-origin: center center;
+    }
+
+    .release-art:hover .release-art-image {
+        transform: scale(1.18);
+    }
+}
+
 .release-art-label {
     font-size: 0.73rem;
     letter-spacing: 0.9px;
@@ -993,10 +1004,15 @@ body.pre-intro .player {
 }
 
 .live-primary {
+    min-width: 0;
+}
+
+.live-secondary {
     display: flex;
     align-items: baseline;
     gap: 9px;
-    min-width: 0;
+    justify-self: end;
+    justify-content: flex-end;
 }
 
 .live-city {
@@ -1361,6 +1377,43 @@ body.pre-intro .player {
 }
 
 /* =======================
+   SAFARI PERFORMANCE MODE
+======================= */
+body.safari-perf .texture-bg {
+    filter: contrast(1.01) saturate(0.92);
+}
+
+body.safari-perf .player,
+body.safari-perf nav ul,
+body.safari-perf .release-card,
+body.safari-perf .live-item,
+body.safari-perf .sd-card,
+body.safari-perf .sd-column,
+body.safari-perf .about-column,
+body.safari-perf .about-link {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+body.safari-perf .player {
+    background: rgba(245, 245, 245, 0.74);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+body.safari-perf .release-card,
+body.safari-perf .live-item,
+body.safari-perf .sd-card,
+body.safari-perf .sd-column,
+body.safari-perf .about-column,
+body.safari-perf .about-link {
+    background: linear-gradient(
+        130deg,
+        rgba(255, 255, 255, 0.5),
+        rgba(245, 245, 245, 0.2)
+    );
+}
+
+/* =======================
    RESPONSIVE
 ======================= */
 @media (max-width: 768px) {
@@ -1561,8 +1614,13 @@ body.pre-intro .player {
     }
 
     .live-primary {
-        flex-wrap: wrap;
-        gap: 6px;
+        min-width: 0;
+    }
+
+    .live-secondary {
+        justify-self: start;
+        justify-content: flex-start;
+        gap: 7px;
     }
 
     .live-date {

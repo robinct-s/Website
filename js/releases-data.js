@@ -1,20 +1,18 @@
 window.RELEASES_DATA = [
     {
-        id: "threshold-bloom",
+        id: "9",
         number: "01",
-        title: "Threshold Bloom",
-        year: "2021",
-        format: "EP",
+        title: "9",
+        year: "2022",
+        format: "Single",
         label: "Stasis Sound",
-        trackCount: 5,
-        artworkRef: "assets/releases/release-01-threshold-bloom.jpg",
-        credits: "Written, produced, mixed, and mastered by Stasis Sound",
+        trackCount: 1,
+        artworkRef: "assets/releases/release-01-9.jpg",
+        artworkCredit: "Tom Gregory",
+        mixCredit: "Robin Tetlow-Shooter",
+        masterCredit: "Robin Tetlow-Shooter",
         tracks: [
-            { title: "Orbit Glass", duration: "04:12" },
-            { title: "Quiet Lattice", duration: "05:06" },
-            { title: "Bloomline", duration: "03:58" },
-            { title: "Amber Drift", duration: "04:44" },
-            { title: "Last Frequency", duration: "06:11" }
+            { title: "9", duration: "03:53" }
         ]
     },
     {
@@ -26,7 +24,9 @@ window.RELEASES_DATA = [
         label: "Stasis Sound",
         trackCount: 9,
         artworkRef: "assets/releases/release-02-field-collapse.jpg",
-        credits: "Written and produced by Stasis Sound, additional percussion design by I. Vale",
+        artworkCredit: "TBC",
+        mixCredit: "TBC",
+        masterCredit: "TBC",
         tracks: [
             { title: "Pressure Map", duration: "05:21" },
             { title: "Wire Pulse", duration: "04:17" },
@@ -48,7 +48,9 @@ window.RELEASES_DATA = [
         label: "Stasis Sound",
         trackCount: 10,
         artworkRef: "assets/releases/release-03-exstasis.jpg",
-        credits: "Written, produced, and mixed by Stasis Sound, mastering by K. Mercer",
+        artworkCredit: "TBC",
+        mixCredit: "TBC",
+        masterCredit: "TBC",
         tracks: [
             { title: "Signal Veil", duration: "04:48" },
             { title: "Glass Divide", duration: "05:03" },
@@ -71,7 +73,9 @@ window.RELEASES_DATA = [
         label: "Stasis Sound",
         trackCount: 14,
         artworkRef: "assets/releases/release-04-exstasis-restored.jpg",
-        credits: "Restoration and re-sequencing by Stasis Sound, remastering by K. Mercer",
+        artworkCredit: "TBC",
+        mixCredit: "TBC",
+        masterCredit: "TBC",
         tracks: [
             { title: "Signal Veil (Restored)", duration: "05:06" },
             { title: "Glass Divide", duration: "05:03" },
@@ -98,7 +102,9 @@ window.RELEASES_DATA = [
         label: "Stasis Sound",
         trackCount: 6,
         artworkRef: "assets/releases/release-05-boreal-relay.jpg",
-        credits: "Written and produced by Stasis Sound, additional field recordings by N. Hale",
+        artworkCredit: "TBC",
+        mixCredit: "TBC",
+        masterCredit: "TBC",
         tracks: [
             { title: "Northbound Delay", duration: "04:39" },
             { title: "Iceline", duration: "05:18" },
@@ -117,7 +123,9 @@ window.RELEASES_DATA = [
         label: "Stasis Sound",
         trackCount: 11,
         artworkRef: "assets/releases/release-06-quiet-geometry.jpg",
-        credits: "Written and produced by Stasis Sound, immersive mix consultation by A. Kline",
+        artworkCredit: "TBC",
+        mixCredit: "TBC",
+        masterCredit: "TBC",
         tracks: [
             { title: "Contour Room", duration: "05:14" },
             { title: "Clear Segment", duration: "04:07" },

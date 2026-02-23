@@ -9,6 +9,7 @@
     function renderEventItem(eventData) {
         const item = makeTag("li", "live-item");
         const primary = makeTag("div", "live-primary");
+        const secondary = makeTag("div", "live-secondary");
         const name = makeTag("span", "live-name", eventData.name || "");
         const city = makeTag("span", "live-city", eventData.city || "");
         const date = makeTag("time", "live-date", eventData.dateLabel || "");
@@ -16,9 +17,10 @@
             date.setAttribute("datetime", eventData.dateIso);
         }
         primary.appendChild(name);
-        primary.appendChild(city);
+        secondary.appendChild(city);
+        secondary.appendChild(date);
         item.appendChild(primary);
-        item.appendChild(date);
+        item.appendChild(secondary);
         return item;
     }
 

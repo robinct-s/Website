@@ -67,7 +67,9 @@
             ["Format", release.format || ""],
             ["Label", release.label || ""],
             ["Track Count", String(release.trackCount || 0)],
-            ["Credits", release.credits || ""]
+            ["Artwork", release.artworkCredit || ""],
+            ["Mix", release.mixCredit || ""],
+            ["Master", release.masterCredit || ""]
         ];
         factRows.forEach(([label, value]) => {
             const row = document.createElement("div");

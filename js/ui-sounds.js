@@ -1,6 +1,15 @@
 (function () {
+    const ua = navigator.userAgent || "";
+    const vendor = navigator.vendor || "";
+    const IS_SAFARI = /Apple/i.test(vendor) &&
+        /Safari/i.test(ua) &&
+        !/Chrome|CriOS|Chromium|Edg|OPR|Firefox|FxiOS|SamsungBrowser/i.test(ua);
     const UI_SOUND_SOURCES = {
         menu: "assets/ui/menu-click.mp3",
+        navClick: "assets/ui/nav-click.mp3",
+        inPageHover: "assets/ui/in-page-hover.mp3",
+        inWorksPageClick: "assets/ui/in-works-page-click.mp3",
+        scrollWheel: "assets/ui/scroll-wheel.mp3",
         logo: "assets/ui/logo-click.mp3",
         player: "assets/ui/player-click.mp3",
         particle: "assets/ui/particle-interference.mp3",
@@ -13,6 +22,10 @@
     };
     const UI_SOUND_VOLUME = {
         menu: 0.2,
+        navClick: 0.2,
+        inPageHover: 0.12,
+        inWorksPageClick: 0.18,
+        scrollWheel: 0.11,
         logo: 0.24,
         player: 0.2,
         particle: 0.12,
@@ -24,8 +37,17 @@
         pageAbout: 0.18
     };
     const PARTICLE_QUEUE_LIMIT = 12;
-    const PARTICLE_QUEUE_GAP_MS = 55;
+    const PARTICLE_QUEUE_GAP_MS = IS_SAFARI ? 90 : 55;
     const HOME_PRELOAD_DELAY_MS = 200;
+    const IN_PAGE_HOVER_GAP_MS = 95;
+    const IN_PAGE_HOVER_RATE_MIN = 0.86;
+    const IN_PAGE_HOVER_RATE_MAX = 1.18;
+    const IN_PAGE_HOVER_VOL_JITTER = 0.24;
+    const SEMITONE_RATIO = Math.pow(2, 1 / 12);
+    const IN_WORKS_CLICK_RATE_MIN = 0.97;
+    const IN_WORKS_CLICK_RATE_MAX = 1.04;
+    const IN_WORKS_CLICK_VOL_JITTER = 0.12;
+    const IN_WORKS_CLICK_TAIL_FADE_MS = 110;
 
     let unlocked = false;
     let mutedForVideoFocus = false;
@@ -39,6 +61,8 @@
         "sound-design": "pageSoundDesign",
         about: "pageAbout"
     };
+    let lastInPageHoverAt = 0;
+    let lastInPageHoverRate = null;
 
     Object.keys(UI_SOUND_SOURCES).forEach((key) => {
         const audio = new Audio();
@@ -73,6 +97,22 @@
         return null;
     }
 
+    function getNavSoundType(target) {
+        const navLink = target && target.closest ? target.closest("nav a[data-link]") : null;
+        if (!navLink) return null;
+        return "navClick";
+    }
+
+    function getInPageMenuNode(target) {
+        if (!target || !target.closest) return null;
+        return target.closest(".release-card summary, .sd-card summary, .live-item, .about-link");
+    }
+
+    function getWorksMenuNode(target) {
+        if (!target || !target.closest) return null;
+        return target.closest(".release-card summary");
+    }
+
     function playUiClick(soundType) {
         if (mutedForVideoFocus) return;
         const base = baseSounds[soundType];
@@ -81,6 +121,81 @@
         const clickSound = base.cloneNode();
         clickSound.volume = UI_SOUND_VOLUME[soundType] ?? 0.2;
         clickSound.play().catch(() => {
+            // Ignore if file is missing or browser blocks.
+        });
+    }
+
+    function randomBetween(min, max) {
+        return min + Math.random() * (max - min);
+    }
+
+    function applyTailFade(sound, fadeMs) {
+        const startVolume = sound.volume;
+        const beginFade = () => {
+            const fadeStartAt = Math.max(0, sound.duration * 1000 - fadeMs);
+            window.setTimeout(() => {
+                const startedAt = performance.now();
+                const step = () => {
+                    const elapsed = performance.now() - startedAt;
+                    const t = Math.max(0, Math.min(1, elapsed / fadeMs));
+                    sound.volume = startVolume * (1 - t);
+                    if (t < 1 && !sound.paused) {
+                        requestAnimationFrame(step);
+                    }
+                };
+                step();
+            }, fadeStartAt);
+        };
+
+        if (Number.isFinite(sound.duration) && sound.duration > 0) {
+            beginFade();
+        } else {
+            sound.addEventListener("loadedmetadata", beginFade, { once: true });
+        }
+    }
+
+    function playInPageHoverSound() {
+        if (mutedForVideoFocus) return;
+        const base = baseSounds.inPageHover;
+        if (!base) return;
+        const sound = base.cloneNode();
+        const baseVolume = UI_SOUND_VOLUME.inPageHover ?? 0.12;
+        const volumeScale = 1 + randomBetween(-IN_PAGE_HOVER_VOL_JITTER, IN_PAGE_HOVER_VOL_JITTER);
+        sound.volume = Math.max(0, Math.min(1, baseVolume * volumeScale));
+        let rate = randomBetween(IN_PAGE_HOVER_RATE_MIN, IN_PAGE_HOVER_RATE_MAX);
+        if (lastInPageHoverRate != null) {
+            const ranges = [];
+            const downMin = IN_PAGE_HOVER_RATE_MIN;
+            const downMax = Math.min(IN_PAGE_HOVER_RATE_MAX, lastInPageHoverRate / SEMITONE_RATIO);
+            if (downMax >= downMin) ranges.push([downMin, downMax]);
+
+            const upMin = Math.max(IN_PAGE_HOVER_RATE_MIN, lastInPageHoverRate * SEMITONE_RATIO);
+            const upMax = IN_PAGE_HOVER_RATE_MAX;
+            if (upMax >= upMin) ranges.push([upMin, upMax]);
+
+            if (ranges.length > 0) {
+                const selected = ranges[Math.floor(Math.random() * ranges.length)];
+                rate = randomBetween(selected[0], selected[1]);
+            }
+        }
+        sound.playbackRate = rate;
+        lastInPageHoverRate = rate;
+        sound.play().catch(() => {
+            // Ignore if file is missing or browser blocks.
+        });
+    }
+
+    function playInWorksClickSound() {
+        if (mutedForVideoFocus) return;
+        const base = baseSounds.inWorksPageClick;
+        if (!base) return;
+        const sound = base.cloneNode();
+        const baseVolume = UI_SOUND_VOLUME.inWorksPageClick ?? 0.18;
+        const volumeScale = 1 + randomBetween(-IN_WORKS_CLICK_VOL_JITTER, IN_WORKS_CLICK_VOL_JITTER);
+        sound.volume = Math.max(0, Math.min(1, baseVolume * volumeScale));
+        sound.playbackRate = randomBetween(IN_WORKS_CLICK_RATE_MIN, IN_WORKS_CLICK_RATE_MAX);
+        applyTailFade(sound, IN_WORKS_CLICK_TAIL_FADE_MS);
+        sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });
     }
@@ -138,16 +253,55 @@
     }
 
     window.addEventListener("pointerdown", unlockAudio, { once: true });
+    window.addEventListener("wheel", unlockAudio, { once: true, passive: true });
 
     document.addEventListener("click", (event) => {
+        const navSoundType = getNavSoundType(event.target);
+        if (navSoundType) {
+            playUiClick(navSoundType);
+            return;
+        }
+
+        const worksNode = getWorksMenuNode(event.target);
+        if (worksNode) {
+            playInWorksClickSound();
+            return;
+        }
+
         const soundType = getSoundType(event.target);
         if (!soundType) return;
         playUiClick(soundType);
     });
 
+    document.addEventListener("pointerover", (event) => {
+        const inPageNode = getInPageMenuNode(event.target);
+        if (!inPageNode) return;
+        const related = event.relatedTarget;
+        if (related && inPageNode.contains(related)) return;
+
+        const now = performance.now();
+        if (now - lastInPageHoverAt < IN_PAGE_HOVER_GAP_MS) return;
+        lastInPageHoverAt = now;
+        playInPageHoverSound();
+    });
+
     window.addEventListener("particleinterference", (event) => {
         enqueueParticleSound(event && event.detail ? event.detail : {});
     });
+
+    window.addEventListener("wheel", (event) => {
+        if (!unlocked || mutedForVideoFocus) return;
+
+        const base = baseSounds.scrollWheel;
+        if (!base) return;
+        const sound = base.cloneNode();
+        const delta = Math.min(1, Math.abs(event.deltaY || 0) / 140);
+        sound.playbackRate = 0.92 + delta * 0.24 + randomBetween(-0.03, 0.03);
+        sound.volume = (UI_SOUND_VOLUME.scrollWheel ?? 0.11) * (0.72 + delta * 0.5);
+        sound.play().catch(() => {
+            // Ignore if file is missing or browser blocks.
+        });
+    }, { passive: true });
 
     window.addEventListener("pagechange", (event) => {
         if (!unlocked) return;
@@ -162,6 +316,8 @@
         if (!unlocked) return;
         const detail = event && event.detail ? event.detail : null;
         if (!detail || detail.page !== "home") return;
+        // Mobile already gets a timed home cue from animation flow; skip preload to avoid duplicate.
+        if (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) return;
         // app.js waits 1200ms before loading nav pages; 200ms delay lands ~1s earlier.
         window.setTimeout(() => {
             playPageSound("home");

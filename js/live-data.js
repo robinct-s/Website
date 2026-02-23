@@ -1,78 +1,138 @@
 window.LIVE_EVENTS_DATA = {
     upcoming: [
         {
-            name: "Fracture Light Festival",
-            city: "Berlin, DE",
-            dateIso: "2026-05-14",
-            dateLabel: "May 14, 2026"
+            name: "KOMA-oto",
+            city: "XLR, Manchester UK",
+            dateIso: "2026-03-06",
+            dateLabel: "06/03/2026"
         },
         {
-            name: "Nocturne Signal Sessions",
-            city: "London, UK",
-            dateIso: "2026-06-02",
-            dateLabel: "June 2, 2026"
+            name: "Chrysalis",
+            city: "Exchange, Bristol UK",
+            dateIso: "2026-04-04",
+            dateLabel: "04/04/2026"
         },
         {
-            name: "Spatial Currents",
-            city: "Amsterdam, NL",
-            dateIso: "2026-07-19",
-            dateLabel: "July 19, 2026"
-        },
-        {
-            name: "Echo Transit Series",
-            city: "Los Angeles, US",
-            dateIso: "2026-09-06",
-            dateLabel: "September 6, 2026"
+            name: "WE_WHO_BREAK",
+            city: "Bush Hall, London UK",
+            dateIso: "2026-04-24",
+            dateLabel: "24/04/2026"
         }
     ],
     archive: [
         {
-            name: "Static Bloom Room",
-            city: "Paris, FR",
-            dateIso: "2025-11-10",
-            dateLabel: "November 10, 2025"
+            name: "Genesys",
+            city: "Archives, London UK",
+            dateIso: "2025-12-05",
+            dateLabel: "05/12/2025"
         },
         {
-            name: "Waveframe Nights",
-            city: "Brussels, BE",
-            dateIso: "2025-09-21",
-            dateLabel: "September 21, 2025"
+            name: "KOMA-oto",
+            city: "The White Hotel, Manchester UK",
+            dateIso: "2025-08-08",
+            dateLabel: "08/08/2025"
         },
         {
-            name: "Contour Stage",
-            city: "Copenhagen, DK",
-            dateIso: "2025-06-28",
-            dateLabel: "June 28, 2025"
+            name: "Yeyo",
+            city: "Soup Kitchen, Manchester UK",
+            dateIso: "2025-08-05",
+            dateLabel: "05/08/2025"
         },
         {
-            name: "Deep Circuit Residency",
-            city: "New York, US",
-            dateIso: "2025-03-12",
-            dateLabel: "March 12, 2025"
+            name: "Leeds Ambient Trance Community",
+            city: "Wharf Chambers, Leeds UK",
+            dateIso: "2025-05-30",
+            dateLabel: "30/05/2025"
         },
         {
-            name: "Rift Atmospheres",
-            city: "Tokyo, JP",
-            dateIso: "2024-12-10",
-            dateLabel: "December 10, 2024"
+            name: "Aether Abyss",
+            city: "ACS, Seoul KO",
+            dateIso: "2025-03-21",
+            dateLabel: "21/03/2025"
         },
         {
-            name: "Night Forms",
-            city: "Barcelona, ES",
-            dateIso: "2024-09-18",
-            dateLabel: "September 18, 2024"
+            name: "Reves",
+            city: "Circus, Tokyo JP",
+            dateIso: "2025-02-21",
+            dateLabel: "21/02/2025"
         },
         {
-            name: "Signal Court",
-            city: "Vienna, AT",
-            dateIso: "2024-05-22",
-            dateLabel: "May 22, 2024"
+            name: "Deem",
+            city: "Octave, Kyoto JP",
+            dateIso: "2025-02-14",
+            dateLabel: "14/02/2025"
         },
         {
-            name: "Afterimage Set",
-            city: "Milan, IT",
-            dateIso: "2023-11-12",
-            dateLabel: "November 12, 2023"
+            name: "Nebula",
+            city: "Clubasia, Tokyo JP",
+            dateIso: "2025-01-17",
+            dateLabel: "17/01/2025"
+        },
+        {
+            name: "Museiufu Dystopia",
+            city: "Space, Tokyo JP",
+            dateIso: "2025-01-03",
+            dateLabel: "03/01/2025"
+        },
+        {
+            name: "REALKOMA",
+            city: "WWWB, Tokyo JP",
+            dateIso: "2024-11-30",
+            dateLabel: "30/11/2024"
+        },
+        {
+            name: "K/A/T/O Massacre",
+            city: "Forestlimit, Tokyo JP",
+            dateIso: "2024-11-27",
+            dateLabel: "27/11/2024"
+        },
+        {
+            name: "Ethereal",
+            city: "Forestlimit, Tokyo JP",
+            dateIso: "2024-08-30",
+            dateLabel: "30/08/2024"
+        },
+        {
+            name: "Cyanide System",
+            city: "Forestlimit, Tokyo JP",
+            dateIso: "2024-08-26",
+            dateLabel: "26/08/2024"
+        },
+        {
+            name: "Human0id",
+            city: "Theater Guild, Tokyo JP",
+            dateIso: "2024-06-15",
+            dateLabel: "15/06/2024"
+        },
+        {
+            name: "KOMA-oto",
+            city: "WWWB, Tokyo JP",
+            dateIso: "2024-05-24",
+            dateLabel: "24/05/2024"
+        },
+        {
+            name: "Ethereal",
+            city: "Forestlimit, Tokyo JP",
+            dateIso: "2024-02-04",
+            dateLabel: "04/02/2024"
+        },
+        {
+            name: "KOMA-oto",
+            city: "The White Hotel, Manchester UK",
+            dateIso: "2023-10-21",
+            dateLabel: "21/10/2023"
+        },
+        {
+            name: "Club 愛 [ai]",
+            city: "Kwia, Berlin DE",
+            dateIso: "2023-10-05",
+            dateLabel: "05/10/2023"
+        },
+        {
+            name: "KOMA-oto",
+            city: "Soup Kitchen, Manchester UK",
+            dateIso: "2023-07-08",
+            dateLabel: "08/07/2023"
         }
     ]
 };

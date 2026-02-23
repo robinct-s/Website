@@ -3,6 +3,19 @@ const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
 const TRANSITION_OUT_MS = 1200;
 let isTransitioning = false;
 
+function isSafariBrowser() {
+    const ua = navigator.userAgent || "";
+    const vendor = navigator.vendor || "";
+    const isAppleVendor = /Apple/i.test(vendor);
+    const hasSafari = /Safari/i.test(ua);
+    const excluded = /Chrome|CriOS|Chromium|Edg|OPR|Firefox|FxiOS|SamsungBrowser/i.test(ua);
+    return isAppleVendor && hasSafari && !excluded;
+}
+
+if (isSafariBrowser()) {
+    document.body.classList.add("safari-perf");
+}
+
 function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -58,6 +71,12 @@ document.querySelectorAll('nav a').forEach(link => {
     link.addEventListener('click', e => {
         e.preventDefault();
         const page = link.dataset.link;
+        const currentPage = document.body.dataset.page || 'home';
+        if (currentPage === 'home' && page === 'home') {
+            // Force re-entry into the home animation selector state.
+            document.body.classList.remove('on-home');
+            void document.body.offsetWidth;
+        }
         if (document.body.dataset.page === 'home' && page !== 'home') {
             contentContainer.classList.add('hide-home-tagline');
         }
