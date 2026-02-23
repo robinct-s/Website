@@ -12,8 +12,12 @@ async function loadPage(page, options = {}) {
     const { initial = false } = options;
     if (isTransitioning) return;
 
-    document.body.classList.toggle('on-home', page === 'home');
-    document.body.dataset.page = page;
+    const fromPage = document.body.dataset.page || 'home';
+    const delayPageStateSwap = !initial && fromPage !== 'home' && page !== 'home';
+    if (!delayPageStateSwap) {
+        document.body.classList.toggle('on-home', page === 'home');
+        document.body.dataset.page = page;
+    }
     window.dispatchEvent(new CustomEvent("pagewillchange", {
         detail: { page, initial }
     }));
@@ -23,6 +27,10 @@ async function loadPage(page, options = {}) {
         if (!initial) {
             contentContainer.classList.add('is-fading');
             await wait(TRANSITION_OUT_MS);
+        }
+        if (delayPageStateSwap) {
+            document.body.classList.toggle('on-home', page === 'home');
+            document.body.dataset.page = page;
         }
 
         const res = await fetch(`content/${page}.html`);
@@ -35,6 +43,7 @@ async function loadPage(page, options = {}) {
 
         requestAnimationFrame(() => {
             contentContainer.classList.remove('is-fading');
+            contentContainer.classList.remove('hide-home-tagline');
         });
     } finally {
         isTransitioning = false;
@@ -49,6 +58,9 @@ document.querySelectorAll('nav a').forEach(link => {
     link.addEventListener('click', e => {
         e.preventDefault();
         const page = link.dataset.link;
+        if (document.body.dataset.page === 'home' && page !== 'home') {
+            contentContainer.classList.add('hide-home-tagline');
+        }
         closeMobileMenu();
         loadPage(page);
     });

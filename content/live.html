@@ -1,11 +1,22 @@
-<section>
-    <h2>Live Performance Dates</h2>
-    <p>Here’s a record of all previous live performances:</p>
+<section class="live-shell" aria-labelledby="live-title">
+    <header class="live-header">
+        <h2 id="live-title">Performance</h2>
+        <p>Upcoming performances are listed first, followed by an archive of past dates.</p>
+    </header>
 
-    <ul>
-        <li>??? – 2024-12-10</li>
-        <li>??? – 2024-09-18</li>
-        <li>??? – 2024-05-22</li>
-        <li>??? – 2023-11-12</li>
-    </ul>
+    <section class="live-block" aria-labelledby="live-upcoming">
+        <div class="live-block-head">
+            <h3 id="live-upcoming">Upcoming</h3>
+            <span class="live-block-count" id="live-upcoming-count">0 events</span>
+        </div>
+        <ul class="live-list live-list-upcoming" id="live-upcoming-list"></ul>
+    </section>
+
+    <section class="live-block" aria-labelledby="live-archive">
+        <div class="live-block-head">
+            <h3 id="live-archive">Archive</h3>
+            <span class="live-block-count" id="live-archive-count">0 events</span>
+        </div>
+        <ul class="live-list live-list-archive" id="live-archive-list"></ul>
+    </section>
 </section>

@@ -12,14 +12,20 @@
     const particles = [];
     const particleCount = 90;
     const INTERFERENCE_MIN_INTERVAL_MS = 75;
+    const BEACON_PROXIMITY_MIN_INTERVAL_MS = 120;
     const BASE_BLACK = { r: 17, g: 17, b: 17 };
     const NATURAL_GREEN = { r: 126, g: 174, b: 124 };
     const WHITE = { r: 255, g: 255, b: 255 };
+    const NATURAL_YELLOW = { r: 223, g: 197, b: 116 };
     let width = 0;
     let height = 0;
     let rafId = null;
     let currentPage = "home";
     let lastInterferenceAt = 0;
+    let lastBeaconProximityAt = 0;
+    let scrollForceY = 0;
+    let pointerOverUi = false;
+    let beacon = null;
 
     function rand(min, max) {
         return Math.random() * (max - min) + min;
@@ -31,6 +37,10 @@
 
     function mixChannel(a, b, t) {
         return Math.round(a + (b - a) * t);
+    }
+
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
     }
 
     function isIntroLockedFormation() {
@@ -56,6 +66,20 @@
         };
     }
 
+    function createBeacon() {
+        return {
+            x: width * 0.76,
+            y: height * 0.46,
+            vx: rand(-0.28, 0.28),
+            vy: rand(-0.24, 0.24),
+            phase: rand(0, Math.PI * 2),
+            drift: rand(0.0011, 0.0021),
+            radius: rand(9.4, 12.2),
+            alpha: 0.84,
+            nearMix: 0
+        };
+    }
+
     function resize() {
         width = window.innerWidth;
         height = window.innerHeight;
@@ -75,6 +99,7 @@
         for (let i = 0; i < particleCount; i += 1) {
             particles.push(createParticle(i));
         }
+        beacon = createBeacon();
     }
 
     function getFormationTarget(p, time) {
@@ -107,9 +132,13 @@
                 break;
             }
             case "about": {
-                const yBand = (n - 0.5) * height * 0.75;
-                tx = cx + Math.sin(n * Math.PI * 6 + time * 0.001) * (width * 0.12);
-                ty = cy + yBand;
+                const ribbonPhase = n * Math.PI * 9 + time * 0.0012;
+                const rightCenter = width * 0.72;
+                const yBand = (n - 0.5) * height * 0.9;
+                tx = rightCenter +
+                    Math.sin(ribbonPhase) * (width * 0.07) +
+                    Math.sin(ribbonPhase * 0.4) * (width * 0.05);
+                ty = cy + yBand + Math.cos(ribbonPhase * 0.55) * 34;
                 break;
             }
             case "home":
@@ -132,6 +161,78 @@
             x: tx + p.jitterX * 0.24 + sway,
             y: ty + p.jitterY * 0.24 + breathe
         };
+    }
+
+    function updateAboutBeacon(time) {
+        if (!beacon || currentPage !== "about") return;
+
+        beacon.phase += beacon.drift;
+        const cx = width * 0.77;
+        const cy = height * 0.5;
+        const orbitX = Math.cos(time * 0.00037 + beacon.phase) * (width * 0.12);
+        const orbitY = Math.sin(time * 0.00051 + beacon.phase * 0.7) * (height * 0.26);
+        const tx = cx + orbitX;
+        const ty = cy + orbitY;
+        const toTargetX = (tx - beacon.x) * 0.01;
+        const toTargetY = (ty - beacon.y) * 0.01;
+
+        const dx = beacon.x - pointer.x;
+        const dy = beacon.y - pointer.y;
+        const distance = Math.hypot(dx, dy) || 0.0001;
+        const interactionRadius = 240;
+        let reactX = 0;
+        let reactY = 0;
+        let nearMix = 0;
+
+        if (distance < interactionRadius) {
+            const falloff = 1 - distance / interactionRadius;
+            const force = falloff * falloff * 2.8;
+            reactX = (dx / distance) * force;
+            reactY = (dy / distance) * force;
+            nearMix = clamp01(falloff * falloff);
+        }
+        beacon.nearMix = nearMix;
+
+        beacon.x += beacon.vx + Math.sin(beacon.phase) * 0.26 + toTargetX + reactX;
+        beacon.y += beacon.vy + Math.cos(beacon.phase * 1.15) * 0.2 + toTargetY + reactY + scrollForceY * 0.28;
+
+        if (beacon.x < -20) beacon.x = width + 20;
+        if (beacon.x > width + 20) beacon.x = -20;
+        if (beacon.y < -20) beacon.y = height + 20;
+        if (beacon.y > height + 20) beacon.y = -20;
+
+        if (
+            pointer.active &&
+            nearMix > 0.06 &&
+            !pointerOverUi &&
+            time - lastBeaconProximityAt > BEACON_PROXIMITY_MIN_INTERVAL_MS
+        ) {
+            window.dispatchEvent(new CustomEvent("aboutbeaconproximity", {
+                detail: { intensity: nearMix }
+            }));
+            lastBeaconProximityAt = time;
+        }
+    }
+
+    function drawAboutBeacon() {
+        if (!beacon || currentPage !== "about") return;
+        const near = clamp01(beacon.nearMix || 0);
+        const glow = beacon.radius * (2.3 + near * 0.95);
+        const coreRadius = beacon.radius * (1 + near * 0.12);
+        const red = mixChannel(NATURAL_YELLOW.r, WHITE.r, near * 0.75);
+        const green = mixChannel(NATURAL_YELLOW.g, WHITE.g, near * 0.75);
+        const blue = mixChannel(NATURAL_YELLOW.b, WHITE.b, near * 0.75);
+
+        ctx.globalAlpha = beacon.alpha * (0.34 + near * 0.34);
+        ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+        ctx.beginPath();
+        ctx.arc(beacon.x, beacon.y, glow, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = beacon.alpha * (1 + near * 0.18);
+        ctx.beginPath();
+        ctx.arc(beacon.x, beacon.y, coreRadius, 0, Math.PI * 2);
+        ctx.fill();
     }
 
     function updateBrandTint() {
@@ -163,6 +264,8 @@
         ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
         let interferenceCount = 0;
         let maxInterferenceForce = 0;
+        scrollForceY *= 0.88;
+        const scrollDrift = scrollForceY;
 
         for (let i = 0; i < particles.length; i += 1) {
             const p = particles[i];
@@ -197,7 +300,7 @@
             }
 
             p.x += p.vx + Math.sin(p.phase) * 0.12 + pullX + reactX + toTargetX;
-            p.y += p.vy + Math.cos(p.phase * 1.25) * 0.08 + pullY + reactY + toTargetY;
+            p.y += p.vy + Math.cos(p.phase * 1.25) * 0.08 + pullY + reactY + toTargetY + scrollDrift * (0.65 + p.homeRadius * 0.7);
 
             if (p.x < -10) p.x = width + 10;
             if (p.x > width + 10) p.x = -10;
@@ -224,8 +327,12 @@
             ctx.fill();
         }
 
+        updateAboutBeacon(time);
+        drawAboutBeacon();
+
         if (
             pointer.active &&
+            !pointerOverUi &&
             interferenceCount > 0 &&
             time - lastInterferenceAt > INTERFERENCE_MIN_INTERVAL_MS
         ) {
@@ -264,12 +371,19 @@
         pointer.x = event.clientX;
         pointer.y = event.clientY;
         pointer.active = true;
+        const target = event.target;
+        pointerOverUi = !!(
+            target &&
+            target.closest &&
+            target.closest("nav a, summary, .release-panel, .live-item, .about-link, button, input, .player, .mobile-menu-toggle, #intro-logo-trigger")
+        );
     });
 
     window.addEventListener("mouseleave", () => {
         pointer.active = false;
         pointer.x = width * 0.5;
         pointer.y = height * 0.5;
+        pointerOverUi = false;
     });
 
     window.addEventListener("touchmove", (event) => {
@@ -277,6 +391,12 @@
         pointer.x = event.touches[0].clientX;
         pointer.y = event.touches[0].clientY;
         pointer.active = true;
+        pointerOverUi = true;
+    }, { passive: true });
+
+    window.addEventListener("wheel", (event) => {
+        const delta = clamp(event.deltaY, -140, 140);
+        scrollForceY = clamp(scrollForceY + delta * 0.006, -3, 3);
     }, { passive: true });
 
     window.addEventListener("pagechange", (event) => {

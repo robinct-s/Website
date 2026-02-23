@@ -4,6 +4,7 @@
         logo: "assets/ui/logo-click.mp3",
         player: "assets/ui/player-click.mp3",
         particle: "assets/ui/particle-interference.mp3",
+        aboutBeacon: "assets/ui/about-beacon.mp3",
         pageHome: "assets/ui/page-home-load.mp3",
         pageWorks: "assets/ui/page-works-load.mp3",
         pageLive: "assets/ui/page-live-load.mp3",
@@ -15,6 +16,7 @@
         logo: 0.24,
         player: 0.2,
         particle: 0.12,
+        aboutBeacon: 0.17,
         pageHome: 0.18,
         pageWorks: 0.18,
         pageLive: 0.18,
@@ -26,6 +28,7 @@
     const HOME_PRELOAD_DELAY_MS = 200;
 
     let unlocked = false;
+    let mutedForVideoFocus = false;
     const baseSounds = {};
     const particleQueue = [];
     let particleQueueTimer = null;
@@ -71,6 +74,7 @@
     }
 
     function playUiClick(soundType) {
+        if (mutedForVideoFocus) return;
         const base = baseSounds[soundType];
         if (!base) return;
 
@@ -85,6 +89,19 @@
         const soundType = PAGE_SOUND_BY_KEY[page];
         if (!soundType) return;
         playUiClick(soundType);
+    }
+
+    function playAboutBeacon(detail) {
+        if (!unlocked || mutedForVideoFocus) return;
+        const intensity = Math.max(0, Math.min(1, detail && detail.intensity != null ? detail.intensity : 0.5));
+        const base = baseSounds.aboutBeacon;
+        if (!base) return;
+        const sound = base.cloneNode();
+        sound.playbackRate = 0.76 + intensity * 0.4;
+        sound.volume = (UI_SOUND_VOLUME.aboutBeacon ?? 0.17) * (0.42 + intensity * 0.55);
+        sound.play().catch(() => {
+            // Missing file or blocked autoplay should fail silently.
+        });
     }
 
     function flushParticleQueue() {
@@ -111,6 +128,7 @@
     }
 
     function enqueueParticleSound(eventData) {
+        if (mutedForVideoFocus) return;
         if (!unlocked) return;
         if (particleQueue.length >= PARTICLE_QUEUE_LIMIT) return;
         particleQueue.push(eventData || {});
@@ -155,5 +173,19 @@
         const page = event && event.detail && event.detail.page;
         if (page !== "home") return;
         playPageSound("home");
+    });
+
+    window.addEventListener("aboutbeaconproximity", (event) => {
+        playAboutBeacon(event && event.detail ? event.detail : {});
+    });
+
+    window.addEventListener("sdvideomodechange", (event) => {
+        mutedForVideoFocus = !!(event && event.detail && event.detail.active);
+        if (!mutedForVideoFocus) return;
+        particleQueue.length = 0;
+        if (particleQueueTimer !== null) {
+            clearTimeout(particleQueueTimer);
+            particleQueueTimer = null;
+        }
     });
 })();
