@@ -14,6 +14,9 @@
         player: "assets/ui/player-click.mp3",
         particle: "assets/ui/particle-interference.mp3",
         aboutBeacon: "assets/ui/about-beacon.mp3",
+        visitorWhisper: "assets/ui/visitor-particle-hover.mp3",
+        visitorFormationIn: "assets/ui/visitor-formation-in.mp3",
+        visitorFormationOut: "assets/ui/visitor-formation-out.mp3",
         pageHome: "assets/ui/page-home-load.mp3",
         pageWorks: "assets/ui/page-works-load.mp3",
         pageLive: "assets/ui/page-live-load.mp3",
@@ -30,6 +33,9 @@
         player: 0.2,
         particle: 0.12,
         aboutBeacon: 0.17,
+        visitorWhisper: 0.14,
+        visitorFormationIn: 0.16,
+        visitorFormationOut: 0.16,
         pageHome: 0.18,
         pageWorks: 0.18,
         pageLive: 0.18,
@@ -59,7 +65,8 @@
         works: "pageWorks",
         live: "pageLive",
         "sound-design": "pageSoundDesign",
-        about: "pageAbout"
+        about: "pageAbout",
+        visitors: "pageAbout"
     };
     let lastInPageHoverAt = 0;
     let lastInPageHoverRate = null;
@@ -219,6 +226,37 @@
         });
     }
 
+    function playVisitorWhisper(detail) {
+        if (!unlocked || mutedForVideoFocus) return;
+        const intensity = Math.max(0, Math.min(1, detail && detail.intensity != null ? detail.intensity : 0.7));
+        const base = baseSounds.visitorWhisper;
+        if (!base) return;
+        const sound = base.cloneNode();
+        sound.playbackRate = 0.58 + intensity * 0.25 + randomBetween(-0.03, 0.03);
+        sound.volume = (UI_SOUND_VOLUME.visitorWhisper ?? 0.14) * (0.45 + intensity * 0.42);
+        applyTailFade(sound, 140);
+        sound.play().catch(() => {
+            // Missing file or blocked autoplay should fail silently.
+        });
+    }
+
+    function playVisitorFormationShift(detail) {
+        if (!unlocked || mutedForVideoFocus) return;
+        const active = !!(detail && detail.active);
+        const base = active ? baseSounds.visitorFormationIn : baseSounds.visitorFormationOut;
+        if (!base) return;
+        const sound = base.cloneNode();
+        sound.playbackRate = active ? 0.78 : 0.95;
+        const baseVolume = active
+            ? (UI_SOUND_VOLUME.visitorFormationIn ?? 0.16)
+            : (UI_SOUND_VOLUME.visitorFormationOut ?? 0.16);
+        sound.volume = baseVolume * (active ? 0.9 : 0.78);
+        applyTailFade(sound, 180);
+        sound.play().catch(() => {
+            // Missing file or blocked autoplay should fail silently.
+        });
+    }
+
     function flushParticleQueue() {
         if (particleQueue.length === 0) {
             particleQueueTimer = null;
@@ -333,6 +371,14 @@
 
     window.addEventListener("aboutbeaconproximity", (event) => {
         playAboutBeacon(event && event.detail ? event.detail : {});
+    });
+
+    window.addEventListener("visitorparticlehover", (event) => {
+        playVisitorWhisper(event && event.detail ? event.detail : {});
+    });
+
+    window.addEventListener("visitorformationchange", (event) => {
+        playVisitorFormationShift(event && event.detail ? event.detail : {});
     });
 
     window.addEventListener("sdvideomodechange", (event) => {

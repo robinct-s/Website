@@ -24,6 +24,25 @@ body, html {
     overflow: hidden;       /* prevent scrollbars */
 }
 
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.8s ease;
+    background:
+        radial-gradient(circle at 24% 22%, rgba(188, 226, 178, 0.42) 0%, rgba(188, 226, 178, 0) 56%),
+        radial-gradient(circle at 78% 16%, rgba(223, 197, 116, 0.2) 0%, rgba(223, 197, 116, 0) 52%),
+        radial-gradient(circle at 62% 74%, rgba(154, 203, 150, 0.34) 0%, rgba(154, 203, 150, 0) 58%),
+        linear-gradient(145deg, rgba(237, 247, 234, 0.82), rgba(225, 241, 220, 0.84));
+}
+
+body.visitors-wash-active::before {
+    opacity: 1;
+}
+
 /* Layered texture background based on the supplied reference image */
 .texture-bg {
     position: fixed;
@@ -309,6 +328,14 @@ body[data-page="about"] main#content {
     padding-bottom: 120px;
 }
 
+body[data-page="visitors"] main#content {
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+    padding-top: 96px;
+    padding-bottom: 120px;
+}
+
 main#content.is-fading {
     opacity: 0;
 }
@@ -349,6 +376,32 @@ main#content.hide-home-tagline .hero p {
     position: relative;
 }
 
+.visitors-shell {
+    width: min(1220px, 100%);
+    min-height: 0;
+    margin: 0 auto;
+    position: relative;
+}
+
+.visitors-header {
+    position: fixed;
+    left: clamp(12px, 2.2vw, 30px);
+    top: 108px;
+    z-index: 6;
+    max-width: min(420px, calc(100vw - 40px));
+}
+
+.visitors-header h2 {
+    margin: 0 0 6px;
+}
+
+.visitors-header p {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.4;
+    color: rgba(17, 17, 17, 0.75);
+}
+
 .home-shell .hero {
     margin-top: 190px;
     position: relative;
@@ -361,8 +414,9 @@ main#content.hide-home-tagline .hero p {
     width: min(186px, 17vw);
     position: fixed;
     left: clamp(12px, 2.2vw, 30px);
-    top: 74%;
-    transform: translateY(-50%);
+    bottom: 14px;
+    top: auto;
+    transform: none;
     border: 1px solid rgba(17, 17, 17, 0.14);
     background: linear-gradient(
         145deg,
@@ -374,7 +428,7 @@ main#content.hide-home-tagline .hero p {
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
     padding: 6px 6px 5px;
     text-align: left;
-    z-index: 4;
+    z-index: 7;
     isolation: isolate;
     overflow: hidden;
 }
@@ -537,6 +591,114 @@ main#content.hide-home-tagline .hero p {
     overflow-y: auto;
     overflow-x: hidden;
     pointer-events: auto;
+}
+
+.visitor-feed-orbit.visitor-feed-floating {
+    width: 100vw;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    bottom: auto;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    display: block;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.visitor-orbit-node {
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translate(-999px, -999px);
+    list-style: none;
+    pointer-events: auto;
+}
+
+.visitor-orbit-dot {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    background: color-mix(in srgb, var(--orbit-color, #dfc574) 76%, rgba(255, 255, 255, 0.24) 24%);
+    opacity: 0.82;
+    box-shadow:
+        0 0 14px color-mix(in srgb, var(--orbit-color, #dfc574) 74%, rgba(255, 255, 255, 0.66) 26%),
+        0 0 30px color-mix(in srgb, var(--orbit-color, #dfc574) 50%, rgba(255, 255, 255, 0.5) 50%);
+    animation: visitorOrbGlow 3.4s ease-in-out infinite;
+}
+
+.visitor-orbit-tip {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    min-width: 150px;
+    max-width: min(28vw, 320px);
+    display: grid;
+    gap: 2px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: rgba(17, 17, 17, 0.9);
+    font-size: 0.68rem;
+    line-height: 1.25;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    text-shadow:
+        0 0 7px rgba(255, 255, 255, 0.48),
+        0 0 15px rgba(219, 240, 210, 0.48);
+    filter: blur(0.2px);
+    transition: opacity 0.24s ease;
+}
+
+.visitor-orbit-tip strong {
+    font-size: 0.62rem;
+    letter-spacing: 0.35px;
+    text-transform: uppercase;
+    opacity: 0.96;
+}
+
+.visitor-orbit-tip span {
+    display: block;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    opacity: 0.95;
+}
+
+.visitor-orbit-node:hover .visitor-orbit-tip,
+.visitor-orbit-node:focus-within .visitor-orbit-tip {
+    opacity: 1;
+    visibility: visible;
+    animation: visitorWhisper 2.8s ease-in-out infinite;
+}
+
+.visitor-orbit-empty {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.66rem;
+    letter-spacing: 0.35px;
+    color: rgba(17, 17, 17, 0.66);
+}
+
+@keyframes visitorOrbGlow {
+    0% { opacity: 0.56; transform: scale(0.88); }
+    50% { opacity: 0.96; transform: scale(1.05); }
+    100% { opacity: 0.56; transform: scale(0.88); }
+}
+
+@keyframes visitorWhisper {
+    0% { opacity: 0.12; transform: translateY(-50%) translateX(2px); }
+    20% { opacity: 0.78; transform: translateY(-50%) translateX(0); }
+    62% { opacity: 0.95; transform: translateY(-50%) translateX(0); }
+    100% { opacity: 0.18; transform: translateY(-50%) translateX(-1px); }
 }
 
 .visitor-entry {
@@ -1894,6 +2056,11 @@ body.safari-perf .visitors-panel {
         min-height: auto;
     }
 
+    .visitors-shell {
+        width: 100%;
+        min-height: auto;
+    }
+
     .home-shell .hero {
         position: relative;
         inset: auto;
@@ -1902,12 +2069,27 @@ body.safari-perf .visitors-panel {
         margin-top: 112px;
     }
 
+    .visitors-header {
+        left: 10px;
+        top: 96px;
+        max-width: calc(100vw - 20px);
+    }
+
     .visitors-panel {
         display: none;
     }
 
     .visitor-feed-floating {
         display: none;
+    }
+
+    body[data-page="visitors"] .visitor-feed-orbit.visitor-feed-floating {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        left: 0;
+        top: 0;
+        bottom: auto;
     }
 
     .works-shell {

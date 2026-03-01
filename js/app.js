@@ -25,6 +25,8 @@ async function loadPage(page, options = {}) {
     const { initial = false } = options;
     if (isTransitioning) return;
 
+    document.body.classList.toggle('visitors-wash-active', page === 'visitors');
+
     const fromPage = document.body.dataset.page || 'home';
     const delayPageStateSwap = !initial && fromPage !== 'home' && page !== 'home';
     if (!delayPageStateSwap) {

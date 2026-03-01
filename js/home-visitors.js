@@ -4,6 +4,23 @@
     const MAX_NAME_LEN = 24;
     const MAX_MESSAGE_LEN = 220;
     const MAX_ITEMS = 120;
+    // Visitors-page particle feed. Set to false to restore list rendering.
+    const ENABLE_ORBITAL_VISITOR_FEED = true;
+    const MAX_ORBIT_PARTICLES = 14;
+    const FORMATION_SWITCH_MS = 20000;
+    const FORMATION_BLEND_MS = 3800;
+    const ORBIT_REGION_PAD_RATIO = 0.035;
+    const DANCE_CENTER_Y_RATIO = 0.56;
+    const FREE_SCATTER_MS = 5200;
+
+    const orbitColorByKey = new Map();
+    let orbitNodes = [];
+    let orbitRafId = 0;
+    let lastHoverSoundAt = 0;
+    let danceMode = false;
+    let lastFormationSwitchAt = 0;
+    let formationBlendStartAt = 0;
+    let freeScatterUntil = 0;
 
     function clampText(value, maxLen) {
         return (value || "").trim().replace(/\s+/g, " ").slice(0, maxLen);
@@ -120,8 +137,253 @@
         noteEl.textContent = text || "";
     }
 
+    function makeEntryKey(entry) {
+        return `${entry.username || ""}|${entry.message || ""}|${entry.createdAt || ""}`;
+    }
+
+    function randomParticleColor() {
+        const hue = Math.floor(Math.random() * 360);
+        const sat = 68 + Math.floor(Math.random() * 20);
+        const light = 58 + Math.floor(Math.random() * 18);
+        return `hsl(${hue} ${sat}% ${light}%)`;
+    }
+
+    function getOrbitColor(entry) {
+        const key = makeEntryKey(entry);
+        if (!orbitColorByKey.has(key)) {
+            orbitColorByKey.set(key, randomParticleColor());
+        }
+        return orbitColorByKey.get(key);
+    }
+
+    function stopOrbitAnimation() {
+        if (orbitRafId) {
+            cancelAnimationFrame(orbitRafId);
+            orbitRafId = 0;
+        }
+    }
+
+    function startOrbitAnimation(feedEl) {
+        stopOrbitAnimation();
+        if (!feedEl || orbitNodes.length === 0) return;
+        danceMode = false;
+        lastFormationSwitchAt = performance.now();
+        formationBlendStartAt = lastFormationSwitchAt - FORMATION_BLEND_MS;
+
+        const tick = () => {
+            if (!document.body || document.body.dataset.page !== "visitors" || !document.body.contains(feedEl)) {
+                stopOrbitAnimation();
+                return;
+            }
+            const now = performance.now();
+            const viewportW = window.innerWidth;
+            const viewportH = window.innerHeight;
+            const regionPadX = viewportW * ORBIT_REGION_PAD_RATIO;
+            const regionPadY = viewportH * ORBIT_REGION_PAD_RATIO;
+            const minX = regionPadX;
+            const maxX = viewportW - regionPadX;
+            const minY = regionPadY;
+            const maxY = viewportH - regionPadY;
+            const viewportCenterX = viewportW * 0.5;
+            const viewportCenterY = viewportH * DANCE_CENTER_Y_RATIO;
+            const centerX = Math.max(minX, Math.min(maxX, viewportCenterX));
+            const centerY = Math.max(minY, Math.min(maxY, viewportCenterY));
+
+            if (now - lastFormationSwitchAt >= FORMATION_SWITCH_MS) {
+                const nextDanceMode = !danceMode;
+                danceMode = nextDanceMode;
+                lastFormationSwitchAt = now;
+                formationBlendStartAt = now;
+                window.dispatchEvent(new CustomEvent("visitorformationchange", {
+                    detail: { active: danceMode }
+                }));
+
+                if (!nextDanceMode) {
+                    const count = Math.max(1, orbitNodes.length);
+                    freeScatterUntil = now + FREE_SCATTER_MS;
+                    orbitNodes.forEach((node, idx) => {
+                        const awayX = node.x - centerX;
+                        const awayY = node.y - centerY;
+                        const radialLen = Math.hypot(awayX, awayY) || 1;
+                        const rx = awayX / radialLen;
+                        const ry = awayY / radialLen;
+                        const splitAngle = (idx / count) * Math.PI * 2 + (Math.random() * 0.36 - 0.18);
+                        const sx = Math.cos(splitAngle);
+                        const sy = Math.sin(splitAngle);
+                        const dirX = rx * 0.52 + sx * 0.48;
+                        const dirY = ry * 0.52 + sy * 0.48;
+                        const dirLen = Math.hypot(dirX, dirY) || 1;
+                        const nx = dirX / dirLen;
+                        const ny = dirY / dirLen;
+                        node.vx += nx * (0.2 + Math.random() * 0.12);
+                        node.vy += ny * (0.2 + Math.random() * 0.12);
+                        node.targetX = Math.max(minX + 14, Math.min(maxX - 14, centerX + nx * (maxX - minX) * (0.62 + Math.random() * 0.2)));
+                        node.targetY = Math.max(minY + 14, Math.min(maxY - 14, centerY + ny * (maxY - minY) * (0.62 + Math.random() * 0.2)));
+                        node.targetShiftAt = now + 2000 + Math.random() * 1800;
+                    });
+                }
+            }
+
+            const blendT = Math.max(0, Math.min(1, (now - formationBlendStartAt) / FORMATION_BLEND_MS));
+            const easedBlend = blendT * blendT * (3 - 2 * blendT);
+            const danceWeight = danceMode ? easedBlend : 1 - easedBlend;
+            const freeWeight = 1 - danceWeight;
+            const scatterStrength = freeWeight > 0.1 && now < freeScatterUntil
+                ? Math.max(0, Math.min(1, (freeScatterUntil - now) / FREE_SCATTER_MS))
+                : 0;
+
+            orbitNodes.forEach((node) => {
+                if (
+                    freeWeight > 0.12 &&
+                    (now > node.targetShiftAt || Math.hypot(node.targetX - node.x, node.targetY - node.y) < 32)
+                ) {
+                    node.targetX = minX + 16 + Math.random() * Math.max(1, (maxX - minX) - 32);
+                    node.targetY = minY + 16 + Math.random() * Math.max(1, (maxY - minY) - 32);
+                    node.targetShiftAt = now + 2600 + Math.random() * 3200;
+                }
+
+                const wobble = Math.sin(now * node.wobbleSpeed + node.wobblePhase) * 0.1;
+                node.vx += wobble * 0.0008;
+                node.vy += Math.cos(now * node.wobbleSpeed * 0.85 + node.wobblePhase) * 0.0008;
+                node.vx += (node.targetX - node.x) * (0.00011 * freeWeight);
+                node.vy += (node.targetY - node.y) * (0.00011 * freeWeight);
+                node.vx += (centerX - node.x) * (0.000012 * freeWeight);
+                node.vy += (centerY - node.y) * (0.000012 * freeWeight);
+                const pad = 8;
+                if (node.x < minX + pad) {
+                    node.vx += (minX + pad - node.x) * 0.003;
+                } else if (node.x > maxX - pad) {
+                    node.vx -= (node.x - (maxX - pad)) * 0.003;
+                }
+
+                if (node.y < minY + pad) {
+                    node.vy += (minY + pad - node.y) * 0.003;
+                } else if (node.y > maxY - pad) {
+                    node.vy -= (node.y - (maxY - pad)) * 0.003;
+                }
+
+                if (scatterStrength > 0) {
+                    orbitNodes.forEach((other) => {
+                        if (other === node) return;
+                        const dx = node.x - other.x;
+                        const dy = node.y - other.y;
+                        const dist = Math.hypot(dx, dy) || 0.0001;
+                        const desired = 86;
+                        if (dist >= desired) return;
+                        const repel = ((desired - dist) / desired) * (0.012 + scatterStrength * 0.02);
+                        node.vx += (dx / dist) * repel;
+                        node.vy += (dy / dist) * repel;
+                    });
+                }
+
+                node.vx = Math.max(-0.24, Math.min(0.24, node.vx));
+                node.vy = Math.max(-0.24, Math.min(0.24, node.vy));
+                node.x += node.vx;
+                node.y += node.vy;
+
+                node.angle += node.danceSpeed;
+                const phasePulse = Math.sin(now * 0.001 + node.wobblePhase) * 6;
+                const radiusX = node.danceRadius + phasePulse;
+                const radiusY = node.danceRadius * 0.76 + phasePulse * 0.6;
+                const targetX = centerX + Math.cos(node.angle) * radiusX;
+                const targetY = centerY + Math.sin(node.angle) * radiusY;
+
+                node.x += (targetX - node.x) * (0.024 * danceWeight);
+                node.y += (targetY - node.y) * (0.024 * danceWeight);
+                node.vx *= (0.992 - danceWeight * 0.03);
+                node.vy *= (0.992 - danceWeight * 0.03);
+
+                node.el.style.transform = `translate(${node.x}px, ${node.y}px)`;
+            });
+
+            orbitRafId = requestAnimationFrame(tick);
+        };
+        orbitRafId = requestAnimationFrame(tick);
+    }
+
+    function renderOrbitFeed(feedEl, items) {
+        if (!feedEl) return;
+        feedEl.classList.add("visitor-feed-orbit");
+        feedEl.innerHTML = "";
+        orbitNodes = [];
+
+        const orbitItems = (items || []).slice(0, MAX_ORBIT_PARTICLES);
+        if (orbitItems.length === 0) {
+            const empty = document.createElement("li");
+            empty.className = "visitor-orbit-empty";
+            empty.textContent = "No messages yet.";
+            feedEl.appendChild(empty);
+            stopOrbitAnimation();
+            return;
+        }
+
+        orbitItems.forEach((entry, index) => {
+            const node = document.createElement("li");
+            node.className = "visitor-orbit-node";
+
+            const dot = document.createElement("button");
+            dot.type = "button";
+            dot.className = "visitor-orbit-dot";
+            dot.setAttribute("aria-label", `${entry.username}: ${entry.message}`);
+            dot.style.setProperty("--orbit-color", getOrbitColor(entry));
+
+            const tip = document.createElement("div");
+            tip.className = "visitor-orbit-tip";
+            const tipName = document.createElement("strong");
+            tipName.textContent = entry.username;
+            const tipMsg = document.createElement("span");
+            tipMsg.textContent = entry.message;
+            tip.appendChild(tipName);
+            tip.appendChild(tipMsg);
+
+            node.addEventListener("mouseenter", () => {
+                const now = performance.now();
+                if (now - lastHoverSoundAt < 90) return;
+                lastHoverSoundAt = now;
+                window.dispatchEvent(new CustomEvent("visitorparticlehover", {
+                    detail: { intensity: 0.7 + Math.random() * 0.3 }
+                }));
+            });
+
+            node.appendChild(dot);
+            node.appendChild(tip);
+            feedEl.appendChild(node);
+
+            const width = Math.max(120, feedEl.clientWidth || window.innerWidth);
+            const height = Math.max(120, feedEl.clientHeight || window.innerHeight);
+            const minX = width * ORBIT_REGION_PAD_RATIO;
+            const maxX = width * (1 - ORBIT_REGION_PAD_RATIO);
+            const minY = height * ORBIT_REGION_PAD_RATIO;
+            const maxY = height * (1 - ORBIT_REGION_PAD_RATIO);
+            orbitNodes.push({
+                el: node,
+                x: minX + Math.random() * Math.max(1, maxX - minX),
+                y: minY + Math.random() * Math.max(1, maxY - minY),
+                vx: (Math.random() * 2 - 1) * 0.32,
+                vy: (Math.random() * 2 - 1) * 0.32,
+                targetX: minX + Math.random() * Math.max(1, maxX - minX),
+                targetY: minY + Math.random() * Math.max(1, maxY - minY),
+                targetShiftAt: performance.now() + 1800 + Math.random() * 2200,
+                angle: Math.random() * Math.PI * 2,
+                danceSpeed: 0.008 + Math.random() * 0.006,
+                danceRadius: (Math.min(width, height) * 0.08) + Math.random() * (Math.min(width, height) * 0.06),
+                wobbleSpeed: 0.001 + Math.random() * 0.0012,
+                wobblePhase: Math.random() * Math.PI * 2,
+                wobbleSize: 2 + Math.random() * 4
+            });
+        });
+
+        startOrbitAnimation(feedEl);
+    }
+
     function renderFeed(feedEl, items) {
         if (!feedEl) return;
+        if (ENABLE_ORBITAL_VISITOR_FEED) {
+            renderOrbitFeed(feedEl, items);
+            return;
+        }
+        feedEl.classList.remove("visitor-feed-orbit");
+        stopOrbitAnimation();
         feedEl.innerHTML = "";
         if (!items || items.length === 0) {
             const empty = document.createElement("li");
@@ -167,7 +429,7 @@
         inputEl.setAttribute("aria-readonly", "true");
     }
 
-    function initVisitorsHome() {
+    function initVisitorsPage() {
         const panel = document.querySelector(".visitors-panel");
         if (!panel) return;
         if (panel.dataset.ready === "true") return;
@@ -269,13 +531,20 @@
 
     window.addEventListener("pagechange", (event) => {
         const page = event && event.detail && event.detail.page;
-        if (page !== "home") return;
-        initVisitorsHome();
+        if (page !== "visitors") {
+            stopOrbitAnimation();
+            return;
+        }
+        initVisitorsPage();
     });
 
     window.addEventListener("load", () => {
-        if (document.body.dataset.page === "home") {
-            initVisitorsHome();
+        if (document.body.dataset.page === "visitors") {
+            initVisitorsPage();
         }
+    });
+
+    window.addEventListener("beforeunload", () => {
+        stopOrbitAnimation();
     });
 })();

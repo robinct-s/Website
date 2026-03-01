@@ -153,6 +153,14 @@
                 ty = cy + yBand + Math.cos(ribbonPhase * 0.55) * 34;
                 break;
             }
+            case "visitors": {
+                const spreadX = (n - 0.5) * width * 1.05;
+                const river = Math.sin(n * Math.PI * 6 + time * 0.00085) * (height * 0.28);
+                const wave = Math.cos(n * Math.PI * 9 + time * 0.0012 + p.phase) * (height * 0.12);
+                tx = cx + spreadX + Math.sin(time * 0.00025 + p.phase) * (width * 0.06);
+                ty = cy + river + wave;
+                break;
+            }
             case "home":
             default: {
                 if (isIntroLockedFormation()) {
