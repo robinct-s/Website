@@ -15,10 +15,10 @@
     const brandHero = document.querySelector(".brand-hero");
     const brandLogo = document.querySelector(".brand-hero .logo");
     const particles = [];
-    const particleCount = IS_SAFARI ? 58 : 90;
+    const particleCount = IS_SAFARI ? 46 : 90;
     const INTERFERENCE_MIN_INTERVAL_MS = IS_SAFARI ? 120 : 75;
     const BEACON_PROXIMITY_MIN_INTERVAL_MS = 120;
-    const TARGET_FRAME_MS = IS_SAFARI ? 22 : 0;
+    const TARGET_FRAME_MS = IS_SAFARI ? 32 : 0;
     const SCROLL_INPUT_GAIN = 0.0135;
     const SCROLL_FORCE_MAX = 6.8;
     const PARTICLE_SCROLL_INFLUENCE = 1.45;
@@ -305,7 +305,7 @@
             const dx = p.x - pointer.x;
             const dy = p.y - pointer.y;
             const distance = Math.hypot(dx, dy) || 0.0001;
-            const interactionRadius = IS_SAFARI ? 148 : 170;
+            const interactionRadius = IS_SAFARI ? 132 : 170;
             let reactX = 0;
             let reactY = 0;
             let whitenByProximity = 0;
@@ -339,12 +339,14 @@
             const green = mixChannel(NATURAL_GREEN.g, WHITE.g, whiteMix);
             const blue = mixChannel(NATURAL_GREEN.b, WHITE.b, whiteMix);
 
-            const glowAlpha = Math.min(1, p.alpha * (IS_SAFARI ? 0.24 : 0.42));
-            ctx.globalAlpha = glowAlpha;
-            ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius * (IS_SAFARI ? 1.65 : 2.1), 0, Math.PI * 2);
-            ctx.fill();
+            if (!IS_SAFARI) {
+                const glowAlpha = Math.min(1, p.alpha * 0.42);
+                ctx.globalAlpha = glowAlpha;
+                ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius * 2.1, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             ctx.globalAlpha = p.alpha;
             ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;

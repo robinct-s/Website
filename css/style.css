@@ -402,6 +402,14 @@ main#content.hide-home-tagline .hero p {
     color: rgba(17, 17, 17, 0.75);
 }
 
+.visitors-mobile-note {
+    display: none;
+    margin-top: 6px;
+    font-size: 0.74rem;
+    letter-spacing: 0.3px;
+    color: rgba(17, 17, 17, 0.8);
+}
+
 .home-shell .hero {
     margin-top: 190px;
     position: relative;
@@ -908,6 +916,29 @@ main#content {
     transition: opacity 0.45s ease, transform 0.3s ease;
 }
 
+#intro-open-note {
+    position: fixed;
+    left: 50%;
+    top: calc(50% + 78px);
+    transform: translateX(-50%);
+    z-index: 6;
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: lowercase;
+    color: rgba(17, 17, 17, 0.76);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+body.pre-intro #intro-open-note {
+    opacity: 1;
+    visibility: visible;
+}
+
 body.pre-intro #intro-logo-trigger:hover {
     transform: translate(-50%, -50%) scale(1.03);
 }
@@ -919,6 +950,13 @@ body.pre-intro.intro-clicked #intro-logo-trigger {
 body.pre-intro.intro-transition #intro-logo-trigger {
     opacity: 0;
     pointer-events: none;
+}
+
+body.pre-intro.intro-clicked #intro-open-note,
+body.pre-intro.intro-transition #intro-open-note,
+body:not(.pre-intro) #intro-open-note {
+    opacity: 0;
+    visibility: hidden;
 }
 
 body:not(.pre-intro) #intro-logo-trigger {
@@ -1869,14 +1907,28 @@ body.pre-intro .player {
     bottom: 16px;
     margin: 0;
     max-width: min(420px, calc(100vw - 24px));
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    white-space: nowrap;
     text-align: left;
-    line-height: 1.35;
-    font-size: 0.74rem;
-    letter-spacing: 0.9px;
-    text-transform: uppercase;
+    line-height: 1.2;
+    font-size: 0.66rem;
+    letter-spacing: 0.25px;
+    text-transform: none;
     color: rgba(17, 17, 17, 0.58);
     z-index: 8;
     pointer-events: none;
+}
+
+.about-credit::before {
+    content: "";
+    width: 1.22em;
+    height: 1.22em;
+    flex: 0 0 1.22em;
+    background-color: currentColor;
+    -webkit-mask: url("../assets/logo.svg") center / contain no-repeat;
+    mask: url("../assets/logo.svg") center / contain no-repeat;
 }
 
 /* =======================
@@ -2075,6 +2127,10 @@ body.safari-perf .visitors-panel {
         max-width: calc(100vw - 20px);
     }
 
+    .visitors-mobile-note {
+        display: block;
+    }
+
     .visitors-panel {
         display: none;
     }
@@ -2229,7 +2285,7 @@ body.safari-perf .visitors-panel {
         bottom: 10px;
         max-width: calc(100vw - 20px);
         margin: 0;
-        font-size: 0.7rem;
+        font-size: 0.62rem;
         line-height: 1.3;
     }
 }

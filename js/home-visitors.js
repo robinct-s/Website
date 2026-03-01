@@ -12,6 +12,13 @@
     const ORBIT_REGION_PAD_RATIO = 0.035;
     const DANCE_CENTER_Y_RATIO = 0.56;
     const FREE_SCATTER_MS = 5200;
+    const ua = navigator.userAgent || "";
+    const vendor = navigator.vendor || "";
+    const IS_SAFARI = /Apple/i.test(vendor) &&
+        /Safari/i.test(ua) &&
+        !/Chrome|CriOS|Chromium|Edg|OPR|Firefox|FxiOS|SamsungBrowser/i.test(ua);
+    const ORBIT_TARGET_FRAME_MS = IS_SAFARI ? 33 : 0;
+    const ORBIT_MAX_PARTICLES = IS_SAFARI ? 10 : MAX_ORBIT_PARTICLES;
 
     const orbitColorByKey = new Map();
     let orbitNodes = [];
@@ -21,6 +28,7 @@
     let lastFormationSwitchAt = 0;
     let formationBlendStartAt = 0;
     let freeScatterUntil = 0;
+    let lastOrbitFrameAt = 0;
 
     function clampText(value, maxLen) {
         return (value || "").trim().replace(/\s+/g, " ").slice(0, maxLen);
@@ -169,8 +177,14 @@
         danceMode = false;
         lastFormationSwitchAt = performance.now();
         formationBlendStartAt = lastFormationSwitchAt - FORMATION_BLEND_MS;
+        lastOrbitFrameAt = 0;
 
-        const tick = () => {
+        const tick = (timestamp) => {
+            if (ORBIT_TARGET_FRAME_MS > 0 && timestamp - lastOrbitFrameAt < ORBIT_TARGET_FRAME_MS) {
+                orbitRafId = requestAnimationFrame(tick);
+                return;
+            }
+            lastOrbitFrameAt = timestamp;
             if (!document.body || document.body.dataset.page !== "visitors" || !document.body.contains(feedEl)) {
                 stopOrbitAnimation();
                 return;
@@ -262,7 +276,7 @@
                     node.vy -= (node.y - (maxY - pad)) * 0.003;
                 }
 
-                if (scatterStrength > 0) {
+                if (!IS_SAFARI && scatterStrength > 0) {
                     orbitNodes.forEach((other) => {
                         if (other === node) return;
                         const dx = node.x - other.x;
@@ -307,7 +321,7 @@
         feedEl.innerHTML = "";
         orbitNodes = [];
 
-        const orbitItems = (items || []).slice(0, MAX_ORBIT_PARTICLES);
+        const orbitItems = (items || []).slice(0, ORBIT_MAX_PARTICLES);
         if (orbitItems.length === 0) {
             const empty = document.createElement("li");
             empty.className = "visitor-orbit-empty";

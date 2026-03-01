@@ -316,10 +316,10 @@
         const description = shell.querySelector("#works-description");
         if (!description) return;
         if (tabName === "fragments") {
-            description.textContent = `${count} fragment ${count === 1 ? "release" : "releases"}. Secondary catalog.`;
+            description.textContent = `${count} fragment ${count === 1 ? "release" : "releases"}. Secondary catalogue.`;
             return;
         }
-        description.textContent = `${count} canon ${count === 1 ? "release" : "releases"}. Main primary catalog.`;
+        description.textContent = `${count} canon ${count === 1 ? "release" : "releases"}. Main primary catalogue.`;
     }
 
     function initWorksPage() {
