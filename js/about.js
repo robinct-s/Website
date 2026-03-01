@@ -12,26 +12,37 @@
     }
 
     function renderLinkCard(item) {
-        const link = makeTag("a", "about-link");
-        link.href = item.url || "#";
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.setAttribute("data-ui-sound", "menu");
+        const isClickable = typeof item.url === "string" && item.url.length > 0;
+        const link = makeTag(isClickable ? "a" : "div", "about-link");
+        if (isClickable) {
+            link.href = item.url;
+            if (item.url.startsWith("mailto:")) {
+                link.rel = "noopener noreferrer";
+            } else {
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+            }
+            link.setAttribute("data-ui-sound", "menu");
+        } else {
+            link.classList.add("is-static");
+        }
 
         const label = makeTag("span", "about-link-label", item.label || "");
         const handle = makeTag("span", "about-link-handle", item.handle || "");
-        const icon = makeTag("span", "about-link-icon");
-        icon.setAttribute("aria-hidden", "true");
+        const icon = isClickable ? makeTag("span", "about-link-icon") : null;
+        if (icon) icon.setAttribute("aria-hidden", "true");
 
         link.appendChild(label);
         link.appendChild(handle);
-        link.appendChild(icon);
+        if (icon) link.appendChild(icon);
 
-        link.addEventListener("mousemove", (event) => {
-            const rect = link.getBoundingClientRect();
-            link.style.setProperty("--mx", `${event.clientX - rect.left}px`);
-            link.style.setProperty("--my", `${event.clientY - rect.top}px`);
-        });
+        if (isClickable) {
+            link.addEventListener("mousemove", (event) => {
+                const rect = link.getBoundingClientRect();
+                link.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+                link.style.setProperty("--my", `${event.clientY - rect.top}px`);
+            });
+        }
 
         return link;
     }
@@ -57,18 +68,23 @@
         const data = window.ABOUT_LINKS_DATA || {};
         const social = Array.isArray(data.social) ? data.social : [];
         const streaming = Array.isArray(data.streaming) ? data.streaming : [];
+        const contact = Array.isArray(data.contact) ? data.contact : [];
 
         const socialList = shell.querySelector("#about-social-list");
         const streamList = shell.querySelector("#about-stream-list");
+        const contactList = shell.querySelector("#about-contact-list");
         const socialCount = shell.querySelector("#about-social-count");
         const streamCount = shell.querySelector("#about-stream-count");
+        const contactCount = shell.querySelector("#about-contact-count");
 
         const socialLinks = renderGroup(socialList, social);
         const streamLinks = renderGroup(streamList, streaming);
+        const contactLinks = renderGroup(contactList, contact);
         setCount(socialCount, social.length);
         setCount(streamCount, streaming.length);
+        setCount(contactCount, contact.length);
 
-        [...socialLinks, ...streamLinks].forEach((link, index) => {
+        [...socialLinks, ...streamLinks, ...contactLinks].forEach((link, index) => {
             link.style.transitionDelay = `${index * 38}ms`;
         });
 

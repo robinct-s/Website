@@ -1,7 +1,25 @@
 <section class="works-shell" aria-labelledby="works-title">
     <header class="works-header">
         <h2 id="works-title">Works</h2>
-        <p>Six releases. Open each one for artwork references, structured release data, and full track timings.</p>
+        <p id="works-description">Main releases live under Canon. Fragments is for secondary releases.</p>
+        <div class="works-tabs" role="tablist" aria-label="Works catalog">
+            <button
+                type="button"
+                class="works-tab is-active"
+                id="works-tab-canon"
+                role="tab"
+                aria-selected="true"
+                data-works-tab="canon"
+            >Canon</button>
+            <button
+                type="button"
+                class="works-tab"
+                id="works-tab-fragments"
+                role="tab"
+                aria-selected="false"
+                data-works-tab="fragments"
+            >Fragments</button>
+        </div>
     </header>
-    <div class="releases-list" id="releases-list"></div>
+    <div class="releases-list" id="releases-list" aria-live="polite"></div>
 </section>

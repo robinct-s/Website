@@ -3,6 +3,7 @@
     const CARD_TOGGLE_EASING = "cubic-bezier(0.65, 0, 0.35, 1)";
     const PANEL_FADE_IN_MS = 380;
     const PANEL_FADE_OUT_MS = 260;
+    const DEFAULT_WORKS_TAB = "canon";
 
     function makeTag(tag, className, text) {
         const el = document.createElement(tag);
@@ -71,6 +72,9 @@
             ["Mix", release.mixCredit || ""],
             ["Master", release.masterCredit || ""]
         ];
+        if (release.primaryArtist) {
+            factRows.splice(4, 0, ["Primary Artist", release.primaryArtist]);
+        }
         factRows.forEach(([label, value]) => {
             const row = document.createElement("div");
             row.appendChild(makeTag("dt", "", label));
@@ -83,6 +87,9 @@
         (release.tracks || []).forEach((track) => {
             const item = document.createElement("li");
             const name = makeTag("span", "track-name", track.title || "");
+            const primary = Array.isArray(track.primaryArtists)
+                ? track.primaryArtists.join(", ")
+                : (track.primaryArtists || "");
             const featured = Array.isArray(track.featuredArtists)
                 ? track.featuredArtists.join(", ")
                 : (track.featuredArtists || "");
@@ -91,6 +98,9 @@
             if (track.kenjaRebuildBy) variants.push(`${track.kenjaRebuildBy} Kenja Rebuild`);
             if (variants.length > 0) {
                 name.appendChild(makeTag("span", "track-variant", ` ${variants.join(", ")}`));
+            }
+            if (primary) {
+                name.appendChild(makeTag("span", "track-feature", ` (w/ ${primary})`));
             }
             if (featured) {
                 name.appendChild(makeTag("span", "track-feature", ` (+ ${featured})`));
@@ -111,18 +121,37 @@
         return details;
     }
 
-    function renderReleases(shell) {
+    function buildEmptyState(tabName) {
+        const empty = makeTag("p", "releases-empty");
+        if (tabName === "fragments") {
+            empty.textContent = "No fragment releases published yet.";
+        } else {
+            empty.textContent = "No releases found in this section.";
+        }
+        return empty;
+    }
+
+    function getReleasesForTab(tabName) {
+        const releases = Array.isArray(window.RELEASES_DATA) ? window.RELEASES_DATA : [];
+        return releases
+            .filter((release) => (release.catalog || DEFAULT_WORKS_TAB) === tabName)
+            .sort((a, b) => Number(a.number || 0) - Number(b.number || 0));
+    }
+
+    function renderReleases(shell, tabName) {
         const list = shell.querySelector("#releases-list");
         if (!list) return [];
-        if (list.dataset.rendered === "true") {
-            return Array.from(list.querySelectorAll(".release-card"));
+        list.innerHTML = "";
+
+        const releases = getReleasesForTab(tabName);
+        if (releases.length === 0) {
+            list.appendChild(buildEmptyState(tabName));
+            return [];
         }
 
-        const releases = Array.isArray(window.RELEASES_DATA) ? window.RELEASES_DATA : [];
         releases.forEach((release) => {
             list.appendChild(renderReleaseCard(release));
         });
-        list.dataset.rendered = "true";
         return Array.from(list.querySelectorAll(".release-card"));
     }
 
@@ -245,13 +274,7 @@
         });
     }
 
-    function initWorksPage() {
-        const shell = document.querySelector(".works-shell");
-        if (!shell) return;
-        if (shell.dataset.ready === "true") return;
-        shell.dataset.ready = "true";
-
-        const cards = renderReleases(shell);
+    function bindCardInteractions(cards) {
         cards.forEach((card, index) => {
             card.style.transitionDelay = `${index * 45}ms`;
 
@@ -277,7 +300,51 @@
                 card.style.setProperty("--my", `${event.clientY - rect.top}px`);
             });
         });
+    }
 
+    function setActiveTab(shell, tabName) {
+        const tabs = Array.from(shell.querySelectorAll(".works-tab"));
+        tabs.forEach((tab) => {
+            const isActive = tab.dataset.worksTab === tabName;
+            tab.classList.toggle("is-active", isActive);
+            tab.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+        shell.dataset.activeTab = tabName;
+    }
+
+    function updateHeaderCopy(shell, tabName, count) {
+        const description = shell.querySelector("#works-description");
+        if (!description) return;
+        if (tabName === "fragments") {
+            description.textContent = `${count} fragment ${count === 1 ? "release" : "releases"}. Secondary catalog.`;
+            return;
+        }
+        description.textContent = `${count} canon ${count === 1 ? "release" : "releases"}. Main primary catalog.`;
+    }
+
+    function initWorksPage() {
+        const shell = document.querySelector(".works-shell");
+        if (!shell) return;
+        if (shell.dataset.ready === "true") return;
+        shell.dataset.ready = "true";
+
+        const renderTab = (tabName) => {
+            setActiveTab(shell, tabName);
+            const cards = renderReleases(shell, tabName);
+            bindCardInteractions(cards);
+            updateHeaderCopy(shell, tabName, cards.length);
+        };
+
+        const tabs = Array.from(shell.querySelectorAll(".works-tab"));
+        tabs.forEach((tabButton) => {
+            tabButton.addEventListener("click", () => {
+                const tabName = tabButton.dataset.worksTab || DEFAULT_WORKS_TAB;
+                if ((shell.dataset.activeTab || DEFAULT_WORKS_TAB) === tabName) return;
+                renderTab(tabName);
+            });
+        });
+
+        renderTab(DEFAULT_WORKS_TAB);
         requestAnimationFrame(() => {
             shell.classList.add("is-ready");
         });

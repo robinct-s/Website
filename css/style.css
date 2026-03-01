@@ -841,9 +841,48 @@ body.pre-intro .player {
     color: rgba(17, 17, 17, 0.82);
 }
 
+.works-tabs {
+    margin-top: 14px;
+    display: inline-flex;
+    gap: 8px;
+}
+
+.works-tab {
+    appearance: none;
+    border: 1px solid rgba(17, 17, 17, 0.24);
+    background: rgba(255, 255, 255, 0.38);
+    color: rgba(17, 17, 17, 0.8);
+    font-size: 0.76rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+
+.works-tab:hover {
+    border-color: rgba(17, 17, 17, 0.52);
+    color: rgba(17, 17, 17, 0.95);
+}
+
+.works-tab.is-active {
+    border-color: rgba(126, 174, 124, 0.84);
+    background: rgba(126, 174, 124, 0.22);
+    color: rgba(17, 17, 17, 0.98);
+}
+
 .releases-list {
     display: grid;
     gap: 11px;
+}
+
+.releases-empty {
+    margin: 0;
+    border: 1px solid rgba(17, 17, 17, 0.16);
+    background: rgba(255, 255, 255, 0.46);
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    color: rgba(17, 17, 17, 0.72);
 }
 
 .release-card {
@@ -1505,8 +1544,8 @@ body.pre-intro .player {
    ABOUT PAGE
 ======================= */
 .about-shell {
-    width: min(640px, calc(100vw - 48px));
-    margin-left: clamp(8px, 4vw, 72px);
+    width: min(780px, calc(100vw - 420px));
+    margin-left: clamp(8px, 3vw, 56px);
     margin-right: auto;
     padding-top: 34px;
     text-align: left;
@@ -1530,8 +1569,8 @@ body.pre-intro .player {
 
 .about-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
 }
 
 .about-column {
@@ -1541,14 +1580,12 @@ body.pre-intro .player {
         rgba(255, 255, 255, 0.16),
         rgba(243, 243, 243, 0.08)
     );
-    padding: 12px;
+    padding: 10px;
 }
 
 .about-column-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
+    display: grid;
+    gap: 2px;
     margin-bottom: 8px;
 }
 
@@ -1557,10 +1594,14 @@ body.pre-intro .player {
     font-size: 0.84rem;
     letter-spacing: 1.45px;
     text-transform: uppercase;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    word-break: normal;
     color: rgba(17, 17, 17, 0.75);
 }
 
 .about-count {
+    display: block;
     font-size: 0.72rem;
     letter-spacing: 1.1px;
     text-transform: uppercase;
@@ -1623,8 +1664,21 @@ body.pre-intro .player {
     opacity: 1;
 }
 
+.about-link.is-static {
+    cursor: default;
+}
+
+.about-link.is-static:hover {
+    border-color: rgba(17, 17, 17, 0.14);
+}
+
+.about-link.is-static:hover::before {
+    opacity: 0;
+}
+
 .about-link-label {
     font-size: 0.89rem;
+    line-height: 1.28;
     letter-spacing: 0.35px;
     color: rgba(17, 17, 17, 0.96);
 }
@@ -1632,6 +1686,8 @@ body.pre-intro .player {
 .about-link-handle {
     grid-column: 1;
     font-size: 0.78rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
     letter-spacing: 0.8px;
     color: rgba(17, 17, 17, 0.62);
 }
@@ -1643,6 +1699,22 @@ body.pre-intro .player {
     border-right: 1px solid rgba(17, 17, 17, 0.75);
     transform: rotate(45deg);
     margin-right: 2px;
+}
+
+.about-credit {
+    position: fixed;
+    left: clamp(8px, 3vw, 56px);
+    bottom: 16px;
+    margin: 0;
+    max-width: min(420px, calc(100vw - 24px));
+    text-align: left;
+    line-height: 1.35;
+    font-size: 0.74rem;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    color: rgba(17, 17, 17, 0.58);
+    z-index: 8;
+    pointer-events: none;
 }
 
 /* =======================
@@ -1848,6 +1920,19 @@ body.safari-perf .visitors-panel {
         line-height: 1.5;
     }
 
+    .works-tabs {
+        margin-top: 11px;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .works-tab {
+        flex: 1 1 0;
+        text-align: center;
+        padding: 8px 10px;
+        font-size: 0.72rem;
+    }
+
     .release-card summary {
         gap: 9px;
         padding: 13px 12px;
@@ -1955,6 +2040,15 @@ body.safari-perf .visitors-panel {
 
     .about-column {
         padding: 10px;
+    }
+
+    .about-credit {
+        left: 10px;
+        bottom: 10px;
+        max-width: calc(100vw - 20px);
+        margin: 0;
+        font-size: 0.7rem;
+        line-height: 1.3;
     }
 }
 
