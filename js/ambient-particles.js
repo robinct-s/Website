@@ -161,6 +161,17 @@
                 ty = cy + river + wave;
                 break;
             }
+            case "mixes": {
+                const columns = 7;
+                const col = p.i % columns;
+                const row = Math.floor(p.i / columns);
+                const laneX = width * 0.16 + (col / Math.max(1, columns - 1)) * (width * 0.68);
+                const rowStep = Math.min(24, height / Math.max(9, Math.floor(particleCount / columns)));
+                const rowBase = height * 0.22 + row * rowStep;
+                tx = laneX + Math.sin(time * 0.001 + row * 0.28 + p.phase) * 22;
+                ty = rowBase + Math.cos(time * 0.00125 + col * 0.5 + p.phase) * 28;
+                break;
+            }
             case "home":
             default: {
                 if (isIntroLockedFormation()) {
@@ -412,7 +423,7 @@
         pointerOverUi = !!(
             target &&
             target.closest &&
-            target.closest("nav a, summary, .release-panel, .live-item, .about-link, .visitors-panel, button, input, textarea, .player, .mobile-menu-toggle, #intro-logo-trigger")
+            target.closest("nav a, summary, .release-panel, .live-item, .about-link, .visitors-panel, .mix-card, .mix-cover-link, .mix-title, .mix-open-link, button, input, textarea, .player, .mobile-menu-toggle, #intro-logo-trigger")
         );
     });
 

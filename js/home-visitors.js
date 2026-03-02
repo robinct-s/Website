@@ -12,6 +12,9 @@
     const ORBIT_REGION_PAD_RATIO = 0.035;
     const DANCE_CENTER_Y_RATIO = 0.56;
     const FREE_SCATTER_MS = 5200;
+    const ORBIT_AVOID_PADDING = 26;
+    const ORBIT_AVOID_FORCE = 0.034;
+    const ORBIT_TARGET_RETRIES = 16;
     const ua = navigator.userAgent || "";
     const vendor = navigator.vendor || "";
     const IS_SAFARI = /Apple/i.test(vendor) &&
@@ -164,6 +167,93 @@
         return orbitColorByKey.get(key);
     }
 
+    function buildOrbitAvoidZones() {
+        const selectors = [".visitors-header"];
+        if (window.innerWidth > 768) selectors.push(".visitors-panel");
+        const pad = window.innerWidth <= 768 ? ORBIT_AVOID_PADDING + 10 : ORBIT_AVOID_PADDING;
+        const zones = [];
+        selectors.forEach((selector) => {
+            const el = document.querySelector(selector);
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            if (!rect || rect.width < 2 || rect.height < 2) return;
+            zones.push({
+                left: rect.left - pad,
+                right: rect.right + pad,
+                top: rect.top - pad,
+                bottom: rect.bottom + pad,
+                reach: pad + 26
+            });
+        });
+        return zones;
+    }
+
+    function isPointInAvoidZones(x, y, zones) {
+        return zones.some((zone) => x >= zone.left && x <= zone.right && y >= zone.top && y <= zone.bottom);
+    }
+
+    function pickSafeOrbitPoint(minX, maxX, minY, maxY, zones, fallbackX, fallbackY) {
+        const innerMinX = minX + 16;
+        const innerMaxX = maxX - 16;
+        const innerMinY = minY + 16;
+        const innerMaxY = maxY - 16;
+        for (let i = 0; i < ORBIT_TARGET_RETRIES; i++) {
+            const x = innerMinX + Math.random() * Math.max(1, innerMaxX - innerMinX);
+            const y = innerMinY + Math.random() * Math.max(1, innerMaxY - innerMinY);
+            if (!isPointInAvoidZones(x, y, zones)) {
+                return { x, y };
+            }
+        }
+        let x = Math.max(innerMinX, Math.min(innerMaxX, fallbackX));
+        let y = Math.max(innerMinY, Math.min(innerMaxY, fallbackY));
+        if (!isPointInAvoidZones(x, y, zones)) {
+            return { x, y };
+        }
+        for (let i = 0; i < 8; i++) {
+            x = innerMinX + Math.random() * Math.max(1, innerMaxX - innerMinX);
+            y = innerMinY + Math.random() * Math.max(1, innerMaxY - innerMinY);
+            if (!isPointInAvoidZones(x, y, zones)) {
+                return { x, y };
+            }
+        }
+        return { x, y };
+    }
+
+    function resolveOrbitCenterPoint(minX, maxX, minY, maxY, zones, baseX, baseY) {
+        const x = Math.max(minX + 16, Math.min(maxX - 16, baseX));
+        const y = Math.max(minY + 16, Math.min(maxY - 16, baseY));
+        if (!isPointInAvoidZones(x, y, zones)) {
+            return { x, y };
+        }
+        return pickSafeOrbitPoint(minX, maxX, minY, maxY, zones, x, y);
+    }
+
+    function applyZoneRepulsion(node, zones, force) {
+        zones.forEach((zone) => {
+            const nearestX = Math.max(zone.left, Math.min(zone.right, node.x));
+            const nearestY = Math.max(zone.top, Math.min(zone.bottom, node.y));
+            let dx = node.x - nearestX;
+            let dy = node.y - nearestY;
+            let dist = Math.hypot(dx, dy);
+            if (dist >= zone.reach) return;
+            if (dist < 0.0001) {
+                const centerX = (zone.left + zone.right) * 0.5;
+                const centerY = (zone.top + zone.bottom) * 0.5;
+                dx = node.x - centerX;
+                dy = node.y - centerY;
+                dist = Math.hypot(dx, dy);
+                if (dist < 0.0001) {
+                    dx = (Math.random() * 2) - 1;
+                    dy = (Math.random() * 2) - 1;
+                    dist = Math.hypot(dx, dy) || 1;
+                }
+            }
+            const strength = ((zone.reach - dist) / zone.reach) * force;
+            node.vx += (dx / dist) * strength;
+            node.vy += (dy / dist) * strength;
+        });
+    }
+
     function stopOrbitAnimation() {
         if (orbitRafId) {
             cancelAnimationFrame(orbitRafId);
@@ -198,10 +288,20 @@
             const maxX = viewportW - regionPadX;
             const minY = regionPadY;
             const maxY = viewportH - regionPadY;
+            const avoidZones = buildOrbitAvoidZones();
             const viewportCenterX = viewportW * 0.5;
             const viewportCenterY = viewportH * DANCE_CENTER_Y_RATIO;
-            const centerX = Math.max(minX, Math.min(maxX, viewportCenterX));
-            const centerY = Math.max(minY, Math.min(maxY, viewportCenterY));
+            const safeCenter = resolveOrbitCenterPoint(
+                minX,
+                maxX,
+                minY,
+                maxY,
+                avoidZones,
+                viewportCenterX,
+                viewportCenterY
+            );
+            const centerX = safeCenter.x;
+            const centerY = safeCenter.y;
 
             if (now - lastFormationSwitchAt >= FORMATION_SWITCH_MS) {
                 const nextDanceMode = !danceMode;
@@ -231,8 +331,17 @@
                         const ny = dirY / dirLen;
                         node.vx += nx * (0.2 + Math.random() * 0.12);
                         node.vy += ny * (0.2 + Math.random() * 0.12);
-                        node.targetX = Math.max(minX + 14, Math.min(maxX - 14, centerX + nx * (maxX - minX) * (0.62 + Math.random() * 0.2)));
-                        node.targetY = Math.max(minY + 14, Math.min(maxY - 14, centerY + ny * (maxY - minY) * (0.62 + Math.random() * 0.2)));
+                        const scatterPoint = pickSafeOrbitPoint(
+                            minX,
+                            maxX,
+                            minY,
+                            maxY,
+                            avoidZones,
+                            centerX + nx * (maxX - minX) * (0.62 + Math.random() * 0.2),
+                            centerY + ny * (maxY - minY) * (0.62 + Math.random() * 0.2)
+                        );
+                        node.targetX = scatterPoint.x;
+                        node.targetY = scatterPoint.y;
                         node.targetShiftAt = now + 2000 + Math.random() * 1800;
                     });
                 }
@@ -251,8 +360,9 @@
                     freeWeight > 0.12 &&
                     (now > node.targetShiftAt || Math.hypot(node.targetX - node.x, node.targetY - node.y) < 32)
                 ) {
-                    node.targetX = minX + 16 + Math.random() * Math.max(1, (maxX - minX) - 32);
-                    node.targetY = minY + 16 + Math.random() * Math.max(1, (maxY - minY) - 32);
+                    const nextPoint = pickSafeOrbitPoint(minX, maxX, minY, maxY, avoidZones, node.x, node.y);
+                    node.targetX = nextPoint.x;
+                    node.targetY = nextPoint.y;
                     node.targetShiftAt = now + 2600 + Math.random() * 3200;
                 }
 
@@ -275,6 +385,7 @@
                 } else if (node.y > maxY - pad) {
                     node.vy -= (node.y - (maxY - pad)) * 0.003;
                 }
+                applyZoneRepulsion(node, avoidZones, ORBIT_AVOID_FORCE + freeWeight * 0.014 + danceWeight * 0.01);
 
                 if (!IS_SAFARI && scatterStrength > 0) {
                     orbitNodes.forEach((other) => {
@@ -306,6 +417,9 @@
                 node.y += (targetY - node.y) * (0.024 * danceWeight);
                 node.vx *= (0.992 - danceWeight * 0.03);
                 node.vy *= (0.992 - danceWeight * 0.03);
+                applyZoneRepulsion(node, avoidZones, ORBIT_AVOID_FORCE * 0.86);
+                node.x = Math.max(minX + 4, Math.min(maxX - 4, node.x));
+                node.y = Math.max(minY + 4, Math.min(maxY - 4, node.y));
 
                 node.el.style.transform = `translate(${node.x}px, ${node.y}px)`;
             });
@@ -320,6 +434,7 @@
         feedEl.classList.add("visitor-feed-orbit");
         feedEl.innerHTML = "";
         orbitNodes = [];
+        const avoidZones = buildOrbitAvoidZones();
 
         const orbitItems = (items || []).slice(0, ORBIT_MAX_PARTICLES);
         if (orbitItems.length === 0) {
@@ -369,14 +484,16 @@
             const maxX = width * (1 - ORBIT_REGION_PAD_RATIO);
             const minY = height * ORBIT_REGION_PAD_RATIO;
             const maxY = height * (1 - ORBIT_REGION_PAD_RATIO);
+            const startPoint = pickSafeOrbitPoint(minX, maxX, minY, maxY, avoidZones, width * 0.5, height * 0.5);
+            const targetPoint = pickSafeOrbitPoint(minX, maxX, minY, maxY, avoidZones, width * 0.5, height * 0.5);
             orbitNodes.push({
                 el: node,
-                x: minX + Math.random() * Math.max(1, maxX - minX),
-                y: minY + Math.random() * Math.max(1, maxY - minY),
+                x: startPoint.x,
+                y: startPoint.y,
                 vx: (Math.random() * 2 - 1) * 0.32,
                 vy: (Math.random() * 2 - 1) * 0.32,
-                targetX: minX + Math.random() * Math.max(1, maxX - minX),
-                targetY: minY + Math.random() * Math.max(1, maxY - minY),
+                targetX: targetPoint.x,
+                targetY: targetPoint.y,
                 targetShiftAt: performance.now() + 1800 + Math.random() * 2200,
                 angle: Math.random() * Math.PI * 2,
                 danceSpeed: 0.008 + Math.random() * 0.006,
@@ -436,6 +553,25 @@
         });
     }
 
+    function renderArchive(archiveEl, items) {
+        if (!archiveEl) return;
+        archiveEl.innerHTML = "";
+        if (window.innerWidth <= 768) return;
+        const archiveItems = (items || []).slice(ORBIT_MAX_PARTICLES);
+        if (archiveItems.length === 0) return;
+        archiveItems.forEach((entry) => {
+            const li = document.createElement("li");
+            li.className = "visitor-archive-item";
+            const name = document.createElement("strong");
+            name.textContent = `${entry.username}: `;
+            const msg = document.createElement("span");
+            msg.textContent = entry.message;
+            li.appendChild(name);
+            li.appendChild(msg);
+            archiveEl.appendChild(li);
+        });
+    }
+
     function lockUsername(inputEl, username) {
         if (!inputEl || !username) return;
         inputEl.value = username;
@@ -459,6 +595,7 @@
         const messageInput = panel.querySelector("#visitor-message");
         const noteEl = panel.querySelector("#visitor-note");
         const feedEl = document.querySelector("#visitor-feed");
+        const archiveEl = document.querySelector("#visitor-archive");
         if (!form || !nameInput || !messageInput || !feedEl) return;
 
         const endpoint = getApiEndpoint();
@@ -483,9 +620,11 @@
                 }
                 feedCache.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
                 renderFeed(feedEl, feedCache);
+                renderArchive(archiveEl, feedCache);
             } catch (_) {
                 setNote(noteEl, "Could not load visitor feed.");
                 renderFeed(feedEl, feedCache);
+                renderArchive(archiveEl, feedCache);
             }
         };
 
@@ -528,6 +667,7 @@
                     writeLocalFeed(nextFeed);
                     feedCache = nextFeed;
                     renderFeed(feedEl, feedCache);
+                    renderArchive(archiveEl, feedCache);
                 }
                 messageInput.value = "";
                 setNote(noteEl, (supabase || endpoint)

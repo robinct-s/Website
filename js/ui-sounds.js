@@ -9,6 +9,7 @@
         navClick: "assets/ui/nav-click.mp3",
         inPageHover: "assets/ui/in-page-hover.mp3",
         inWorksPageClick: "assets/ui/in-works-page-click.mp3",
+        streamLink: "assets/ui/stream-link-click.mp3",
         scrollWheel: "assets/ui/scroll-wheel.mp3",
         logo: "assets/ui/logo-click.mp3",
         player: "assets/ui/player-click.mp3",
@@ -28,6 +29,7 @@
         navClick: 0.2,
         inPageHover: 0.12,
         inWorksPageClick: 0.18,
+        streamLink: 0.2,
         scrollWheel: 0.11,
         logo: 0.24,
         player: 0.2,
@@ -63,6 +65,7 @@
     const PAGE_SOUND_BY_KEY = {
         home: "pageHome",
         works: "pageWorks",
+        mixes: "pageWorks",
         live: "pageLive",
         "sound-design": "pageSoundDesign",
         about: "pageAbout",
@@ -112,7 +115,7 @@
 
     function getInPageMenuNode(target) {
         if (!target || !target.closest) return null;
-        return target.closest(".release-card summary, .sd-card summary, .live-item, .about-link");
+        return target.closest(".release-card summary, .sd-card summary, .live-item, .about-link, .mix-cover-link, .mix-title, .mix-open-link");
     }
 
     function getWorksMenuNode(target) {

@@ -366,7 +366,7 @@ window.RELEASES_DATA = [
         artworkRef: "assets/releases/brelease-15-exphoria.jpg",
         artworkCredit: "Matt Clark",
         mixCredit: "Robin Tetlow-Shooter, Samuele Campanella",
-        masterCredit: "KPAX",
+        masterCredit: "Hubert Zygadlo",
         tracks: [
             { title: "Uplink", featuredArtists: "s7n", duration: "4:21" }
         ]
@@ -407,3 +407,4 @@ window.RELEASES_DATA = [
         ]
     }
 ];
+
