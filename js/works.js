@@ -465,7 +465,7 @@
             description.textContent = `${count} fragment ${count === 1 ? "release" : "releases"}. Secondary catalogue.`;
             return;
         }
-        description.textContent = `${count} canon ${count === 1 ? "release" : "releases"}. Main primary catalogue.`;
+        description.textContent = `${count} canon ${count === 1 ? "release" : "releases"}. Primary Catalogue.`;
     }
 
     function initWorksPage() {

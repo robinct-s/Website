@@ -27,7 +27,7 @@ window.RELEASES_DATA = [
         trackCount: 11,
         artworkRef: "assets/releases/release-02-exstasis.jpg",
         artworkCredit: "Simon",
-        mixCredit: "Azrel",
+        mixCredit: "Robin Tetlow-Shooter",
         masterCredit: "Wim Daehan",
         tracks: [
             { title: "Mist Shield", duration: "2:53" },
@@ -54,8 +54,8 @@ window.RELEASES_DATA = [
         trackCount: 11,
         artworkRef: "assets/releases/release-03-exstasis-restored.jpg",
         artworkCredit: "Kazuma Watanabe",
-        mixCredit: "Azrel",
-        masterCredit: "Lorenzi",
+        mixCredit: "Robin Tetlow-Shooter",
+        masterCredit: "Etienne Lorenzi",
         tracks: [
             { title: "Distil", duration: "4:45" },
             { title: "Radiance", remixBy: "Quit Life", duration: "3:45" },
