@@ -142,6 +142,11 @@
             }));
     }
 
+    function formatTrackCount(trackCount) {
+        const count = Number(trackCount) || 0;
+        return `${count} ${count === 1 ? "track" : "tracks"}`;
+    }
+
     function renderReleaseCard(release) {
         const details = makeTag("details", "release-card");
         details.dataset.releaseId = release.id || "";
@@ -153,7 +158,7 @@
         const meta = makeTag(
             "span",
             "release-meta",
-            `${release.year || ""} \u00B7 ${release.format || ""} \u00B7 ${release.trackCount || 0} tracks`
+            `${release.year || ""} \u00B7 ${release.format || ""} \u00B7 ${formatTrackCount(release.trackCount)}`
         );
         const indicator = makeTag("span", "release-toggle-indicator");
         indicator.setAttribute("aria-hidden", "true");
