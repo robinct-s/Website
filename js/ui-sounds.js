@@ -8,6 +8,8 @@
         menu: "assets/ui/menu-click.mp3",
         navClick: "assets/ui/nav-click.mp3",
         inPageHover: "assets/ui/in-page-hover.mp3",
+        releaseCoverHover: "assets/ui/release-cover-hover.mp3",
+        streamLinkHover: "assets/ui/stream-link-hover.mp3",
         inWorksPageClick: "assets/ui/in-works-page-click.mp3",
         streamLink: "assets/ui/stream-link-click.mp3",
         scrollWheel: "assets/ui/scroll-wheel.mp3",
@@ -28,6 +30,8 @@
         menu: 0.2,
         navClick: 0.2,
         inPageHover: 0.12,
+        releaseCoverHover: 0.16,
+        streamLinkHover: 0.17,
         inWorksPageClick: 0.18,
         streamLink: 0.2,
         scrollWheel: 0.11,
@@ -121,6 +125,24 @@
     function getWorksMenuNode(target) {
         if (!target || !target.closest) return null;
         return target.closest(".release-card summary");
+    }
+
+    function getHoverSoundTarget(target) {
+        if (!target || !target.closest) return null;
+
+        const customHoverNode = target.closest("[data-ui-hover-sound]");
+        if (customHoverNode) {
+            const soundType = customHoverNode.getAttribute("data-ui-hover-sound");
+            if (soundType) {
+                return { node: customHoverNode, soundType };
+            }
+        }
+
+        const inPageNode = getInPageMenuNode(target);
+        if (inPageNode) {
+            return { node: inPageNode, soundType: "inPageHover" };
+        }
+        return null;
     }
 
     function playUiClick(soundType) {
@@ -315,15 +337,20 @@
     });
 
     document.addEventListener("pointerover", (event) => {
-        const inPageNode = getInPageMenuNode(event.target);
-        if (!inPageNode) return;
+        const hoverTarget = getHoverSoundTarget(event.target);
+        if (!hoverTarget) return;
+        const hoverNode = hoverTarget.node;
         const related = event.relatedTarget;
-        if (related && inPageNode.contains(related)) return;
+        if (related && hoverNode.contains(related)) return;
 
         const now = performance.now();
         if (now - lastInPageHoverAt < IN_PAGE_HOVER_GAP_MS) return;
         lastInPageHoverAt = now;
-        playInPageHoverSound();
+        if (hoverTarget.soundType === "inPageHover") {
+            playInPageHoverSound();
+            return;
+        }
+        playUiClick(hoverTarget.soundType);
     });
 
     window.addEventListener("particleinterference", (event) => {

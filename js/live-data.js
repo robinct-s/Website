@@ -1,12 +1,6 @@
 window.LIVE_EVENTS_DATA = {
     upcoming: [
         {
-            name: "KOMA-oto",
-            city: "XLR, Manchester UK",
-            dateIso: "2026-03-06",
-            dateLabel: "06/03/2026"
-        },
-        {
             name: "Chrysalis",
             city: "Exchange, Bristol UK",
             dateIso: "2026-04-04",
@@ -20,6 +14,12 @@ window.LIVE_EVENTS_DATA = {
         }
     ],
     archive: [
+        {
+            name: "KOMA-oto",
+            city: "XLR, Manchester UK",
+            dateIso: "2026-03-06",
+            dateLabel: "06/03/2026"
+        },
         {
             name: "Genesys",
             city: "Archives, London UK",

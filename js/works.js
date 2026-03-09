@@ -171,6 +171,7 @@
 
         const panel = makeTag("div", "release-panel");
         const figure = makeTag("figure", "release-art");
+        figure.dataset.uiHoverSound = "releaseCoverHover";
         figure.dataset.imageState = "loading";
         figure.setAttribute("role", "img");
         figure.setAttribute("aria-label", `${release.title || "Release"} artwork`);
@@ -259,6 +260,7 @@
                 link.rel = "noopener noreferrer";
                 link.dataset.platform = stream.id;
                 link.dataset.uiSound = "streamLink";
+                link.dataset.uiHoverSound = "streamLinkHover";
                 streamList.appendChild(link);
             });
             copy.appendChild(streamTitle);

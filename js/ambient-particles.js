@@ -17,6 +17,8 @@
     const particles = [];
     const particleCount = IS_SAFARI ? 46 : 90;
     const INTERFERENCE_MIN_INTERVAL_MS = IS_SAFARI ? 120 : 75;
+    const POINTER_MOVEMENT_ACTIVE_WINDOW_MS = 120;
+    const POINTER_MOVE_EPSILON_PX = 0.2;
     const BEACON_PROXIMITY_MIN_INTERVAL_MS = 120;
     const TARGET_FRAME_MS = IS_SAFARI ? 32 : 0;
     const SCROLL_INPUT_GAIN = 0.0135;
@@ -36,6 +38,7 @@
     let lastFrameAt = 0;
     let scrollForceY = 0;
     let pointerOverUi = false;
+    let lastPointerMoveAt = 0;
     let beacon = null;
     let tintFrame = 0;
 
@@ -372,6 +375,7 @@
         if (
             pointer.active &&
             !pointerOverUi &&
+            time - lastPointerMoveAt <= POINTER_MOVEMENT_ACTIVE_WINDOW_MS &&
             interferenceCount > 0 &&
             time - lastInterferenceAt > INTERFERENCE_MIN_INTERVAL_MS
         ) {
@@ -416,6 +420,11 @@
     });
 
     window.addEventListener("mousemove", (event) => {
+        const dx = event.clientX - pointer.x;
+        const dy = event.clientY - pointer.y;
+        if ((dx * dx + dy * dy) >= (POINTER_MOVE_EPSILON_PX * POINTER_MOVE_EPSILON_PX)) {
+            lastPointerMoveAt = performance.now();
+        }
         pointer.x = event.clientX;
         pointer.y = event.clientY;
         pointer.active = true;
@@ -432,6 +441,7 @@
         pointer.x = width * 0.5;
         pointer.y = height * 0.5;
         pointerOverUi = false;
+        lastPointerMoveAt = 0;
     });
 
     window.addEventListener("touchmove", (event) => {

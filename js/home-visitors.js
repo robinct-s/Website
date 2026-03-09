@@ -356,6 +356,15 @@
                 : 0;
 
             orbitNodes.forEach((node) => {
+                const targetScale = node.hovered ? 1.22 : 1;
+                node.scale += (targetScale - node.scale) * 0.24;
+                if (node.hovered) {
+                    node.vx = 0;
+                    node.vy = 0;
+                    node.el.style.transform = `translate(${node.x}px, ${node.y}px) scale(${node.scale})`;
+                    return;
+                }
+
                 if (
                     freeWeight > 0.12 &&
                     (now > node.targetShiftAt || Math.hypot(node.targetX - node.x, node.targetY - node.y) < 32)
@@ -421,7 +430,7 @@
                 node.x = Math.max(minX + 4, Math.min(maxX - 4, node.x));
                 node.y = Math.max(minY + 4, Math.min(maxY - 4, node.y));
 
-                node.el.style.transform = `translate(${node.x}px, ${node.y}px)`;
+                node.el.style.transform = `translate(${node.x}px, ${node.y}px) scale(${node.scale})`;
             });
 
             orbitRafId = requestAnimationFrame(tick);
@@ -465,19 +474,6 @@
             tip.appendChild(tipName);
             tip.appendChild(tipMsg);
 
-            node.addEventListener("mouseenter", () => {
-                const now = performance.now();
-                if (now - lastHoverSoundAt < 90) return;
-                lastHoverSoundAt = now;
-                window.dispatchEvent(new CustomEvent("visitorparticlehover", {
-                    detail: { intensity: 0.7 + Math.random() * 0.3 }
-                }));
-            });
-
-            node.appendChild(dot);
-            node.appendChild(tip);
-            feedEl.appendChild(node);
-
             const width = Math.max(120, feedEl.clientWidth || window.innerWidth);
             const height = Math.max(120, feedEl.clientHeight || window.innerHeight);
             const minX = width * ORBIT_REGION_PAD_RATIO;
@@ -486,7 +482,7 @@
             const maxY = height * (1 - ORBIT_REGION_PAD_RATIO);
             const startPoint = pickSafeOrbitPoint(minX, maxX, minY, maxY, avoidZones, width * 0.5, height * 0.5);
             const targetPoint = pickSafeOrbitPoint(minX, maxX, minY, maxY, avoidZones, width * 0.5, height * 0.5);
-            orbitNodes.push({
+            const orbitNode = {
                 el: node,
                 x: startPoint.x,
                 y: startPoint.y,
@@ -500,8 +496,28 @@
                 danceRadius: (Math.min(width, height) * 0.08) + Math.random() * (Math.min(width, height) * 0.06),
                 wobbleSpeed: 0.001 + Math.random() * 0.0012,
                 wobblePhase: Math.random() * Math.PI * 2,
-                wobbleSize: 2 + Math.random() * 4
+                wobbleSize: 2 + Math.random() * 4,
+                hovered: false,
+                scale: 1
+            };
+            orbitNodes.push(orbitNode);
+
+            node.addEventListener("mouseenter", () => {
+                const now = performance.now();
+                orbitNode.hovered = true;
+                if (now - lastHoverSoundAt < 90) return;
+                lastHoverSoundAt = now;
+                window.dispatchEvent(new CustomEvent("visitorparticlehover", {
+                    detail: { intensity: 0.7 + Math.random() * 0.3 }
+                }));
             });
+            node.addEventListener("mouseleave", () => {
+                orbitNode.hovered = false;
+            });
+
+            node.appendChild(dot);
+            node.appendChild(tip);
+            feedEl.appendChild(node);
         });
 
         startOrbitAnimation(feedEl);
