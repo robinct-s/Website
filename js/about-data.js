@@ -41,7 +41,8 @@ window.ABOUT_LINKS_DATA = {
         },
         {
             label: "Sound Design",
-            handle: "TBA"
+            handle: "stasissound1@gmail.com",
+            url: "mailto:stasissound1@gmail.com"
         }
     ]
 };
