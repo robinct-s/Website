@@ -12,9 +12,13 @@
         streamLinkHover: "assets/ui/stream-link-hover.mp3",
         inWorksPageClick: "assets/ui/in-works-page-click.mp3",
         streamLink: "assets/ui/stream-link-click.mp3",
+        worksTab: "assets/ui/menu-click.mp3",
         scrollWheel: "assets/ui/scroll-wheel.mp3",
         logo: "assets/ui/logo-click.mp3",
+        logoRepulse: "assets/ui/logo-repulse.mp3",
         player: "assets/ui/player-click.mp3",
+        playerPlay: "assets/ui/player-play.mp3",
+        playerPause: "assets/ui/player-pause.mp3",
         particle: "assets/ui/particle-interference.mp3",
         aboutBeacon: "assets/ui/about-beacon.mp3",
         visitorWhisper: "assets/ui/visitor-particle-hover.mp3",
@@ -34,12 +38,16 @@
         streamLinkHover: 0.17,
         inWorksPageClick: 0.18,
         streamLink: 0.2,
+        worksTab: 0.18,
         scrollWheel: 0.11,
         logo: 0.24,
+        logoRepulse: 0.2,
         player: 0.2,
+        playerPlay: 0.2,
+        playerPause: 0.2,
         particle: 0.12,
         aboutBeacon: 0.17,
-        visitorWhisper: 0.14,
+        visitorWhisper: 0.2,
         visitorFormationIn: 0.16,
         visitorFormationOut: 0.16,
         pageHome: 0.18,
@@ -60,6 +68,7 @@
     const IN_WORKS_CLICK_RATE_MAX = 1.04;
     const IN_WORKS_CLICK_VOL_JITTER = 0.12;
     const IN_WORKS_CLICK_TAIL_FADE_MS = 110;
+    const INTRO_LOGO_SOUND_GAP_MS = 520;
 
     let unlocked = false;
     let mutedForVideoFocus = false;
@@ -77,6 +86,7 @@
     };
     let lastInPageHoverAt = 0;
     let lastInPageHoverRate = null;
+    let lastIntroLogoSoundAt = 0;
 
     Object.keys(UI_SOUND_SOURCES).forEach((key) => {
         const audio = new Audio();
@@ -103,6 +113,11 @@
     function getSoundType(target) {
         if (!target) return null;
         if (target.closest("#intro-logo-trigger")) return "logo";
+        if (target.closest("#play-pause")) {
+            const playPauseBtn = document.getElementById("play-pause");
+            const state = playPauseBtn && playPauseBtn.dataset ? playPauseBtn.dataset.state : "";
+            return state === "playing" ? "playerPlay" : "playerPause";
+        }
         if (target.closest(".player button")) return "player";
         if (target.closest("nav a")) return "menu";
 
@@ -155,6 +170,13 @@
         clickSound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });
+    }
+
+    function shouldSkipIntroLogoSound() {
+        const now = performance.now();
+        if (now - lastIntroLogoSoundAt < INTRO_LOGO_SOUND_GAP_MS) return true;
+        lastIntroLogoSoundAt = now;
+        return false;
     }
 
     function randomBetween(min, max) {
@@ -317,6 +339,7 @@
 
     window.addEventListener("pointerdown", unlockAudio, { once: true });
     window.addEventListener("wheel", unlockAudio, { once: true, passive: true });
+    window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
 
     document.addEventListener("click", (event) => {
         const navSoundType = getNavSoundType(event.target);
@@ -333,8 +356,17 @@
 
         const soundType = getSoundType(event.target);
         if (!soundType) return;
+        if (soundType === "logo" && shouldSkipIntroLogoSound()) return;
         playUiClick(soundType);
     });
+
+    document.addEventListener("touchstart", (event) => {
+        const target = event.target;
+        if (!target || !target.closest) return;
+        if (!target.closest("#intro-logo-trigger")) return;
+        if (shouldSkipIntroLogoSound()) return;
+        playUiClick("logo");
+    }, { passive: true });
 
     document.addEventListener("pointerover", (event) => {
         const hoverTarget = getHoverSoundTarget(event.target);
@@ -397,6 +429,16 @@
         const page = event && event.detail && event.detail.page;
         if (page !== "home") return;
         playPageSound("home");
+    });
+
+    window.addEventListener("logorepulse", () => {
+        if (!unlocked) return;
+        playUiClick("logoRepulse");
+    });
+
+    window.addEventListener("workstabchange", () => {
+        if (!unlocked) return;
+        playUiClick("worksTab");
     });
 
     window.addEventListener("aboutbeaconproximity", (event) => {

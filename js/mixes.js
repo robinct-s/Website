@@ -73,7 +73,8 @@
 
         const streamTitle = makeTag("h4", "release-stream-title", "Listen");
         const streamList = makeTag("div", "release-stream-links");
-        const link = makeTag("a", "release-stream-link", "SoundCloud");
+        const linkLabel = mix.linkLabel || (mix.link && /youtu\.?be/i.test(mix.link) ? "YouTube" : "SoundCloud");
+        const link = makeTag("a", "release-stream-link", linkLabel);
         link.href = mix.link || "#";
         link.target = "_blank";
         link.rel = "noopener noreferrer";

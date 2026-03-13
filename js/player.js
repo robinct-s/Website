@@ -47,6 +47,12 @@ let resumeAfterVideoFocus = false;
 let videoModeSilenced = false;
 let videoFocusModeActive = false;
 
+function setPlayButtonState(playing) {
+    if (!playPauseBtn) return;
+    playPauseBtn.textContent = playing ? "\u23F8" : "\u25B6";
+    playPauseBtn.dataset.state = playing ? "playing" : "paused";
+}
+
 function clearIntroTimers() {
     if (introTransitionTimer !== null) {
         clearTimeout(introTransitionTimer);
@@ -180,12 +186,12 @@ function resumeAfterVideoModeIfNeeded() {
             // Fallback for older browsers without promise-returning play().
             player.volume = targetVolume;
             isPlaying = true;
-            playPauseBtn.textContent = "\u23F8";
+            setPlayButtonState(true);
         }
     } else {
         fadeToTargetVolume(900);
         isPlaying = true;
-        playPauseBtn.textContent = "\u23F8";
+        setPlayButtonState(true);
     }
     resumeAfterVideoFocus = false;
     videoModeSilenced = false;
@@ -238,12 +244,12 @@ playPauseBtn.addEventListener("click", () => {
     if (player.paused) {
         playWithFadeIn();
         isPlaying = true;
-        playPauseBtn.textContent = "\u23F8";
+        setPlayButtonState(true);
     } else {
         cancelVolumeFade();
         player.pause();
         isPlaying = false;
-        playPauseBtn.textContent = "\u25B6";
+        setPlayButtonState(false);
     }
 });
 
@@ -256,7 +262,7 @@ if (introLogoTrigger) {
             playWithFadeIn();
         }
         isPlaying = true;
-        playPauseBtn.textContent = "\u23F8";
+        setPlayButtonState(true);
     });
 }
 
@@ -265,14 +271,14 @@ nextBtn.addEventListener("click", () => {
     isPlaying = true;
     currentTrack = (currentTrack + 1) % playlist.length;
     loadTrack(currentTrack);
-    playPauseBtn.textContent = "\u23F8";
+    setPlayButtonState(true);
 });
 
 prevBtn.addEventListener("click", () => {
     isPlaying = true;
     currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
     loadTrack(currentTrack);
-    playPauseBtn.textContent = "\u23F8";
+    setPlayButtonState(true);
 });
 
 // ---------- Track Ended ----------
@@ -303,6 +309,7 @@ window.addEventListener("load", () => {
     }
 
     introStarted = document.body.classList.contains("intro-started");
+    setPlayButtonState(!player.paused && !!player.src);
 });
 
 // ---------- Save Volume ----------

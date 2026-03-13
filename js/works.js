@@ -494,6 +494,7 @@
                 const tabName = tabButton.dataset.worksTab || DEFAULT_WORKS_TAB;
                 if ((shell.dataset.activeTab || DEFAULT_WORKS_TAB) === tabName) return;
                 renderTab(tabName);
+                window.dispatchEvent(new CustomEvent("workstabchange", { detail: { tab: tabName } }));
             });
         });
 

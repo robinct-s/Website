@@ -188,6 +188,31 @@
         return zones;
     }
 
+    function getOrbitBounds(viewportW, viewportH) {
+        const regionPadX = viewportW * ORBIT_REGION_PAD_RATIO;
+        const regionPadY = viewportH * ORBIT_REGION_PAD_RATIO;
+        let minY = regionPadY;
+        const maxY = viewportH - regionPadY;
+
+        if (window.innerWidth <= 768) {
+            const header = document.querySelector(".visitors-header");
+            if (header) {
+                const rect = header.getBoundingClientRect();
+                if (rect && rect.height > 0) {
+                    const pad = ORBIT_AVOID_PADDING + 12;
+                    minY = Math.max(minY, rect.bottom + pad);
+                }
+            }
+        }
+
+        return {
+            minX: regionPadX,
+            maxX: viewportW - regionPadX,
+            minY: Math.min(minY, maxY - 12),
+            maxY
+        };
+    }
+
     function isPointInAvoidZones(x, y, zones) {
         return zones.some((zone) => x >= zone.left && x <= zone.right && y >= zone.top && y <= zone.bottom);
     }
@@ -282,12 +307,11 @@
             const now = performance.now();
             const viewportW = window.innerWidth;
             const viewportH = window.innerHeight;
-            const regionPadX = viewportW * ORBIT_REGION_PAD_RATIO;
-            const regionPadY = viewportH * ORBIT_REGION_PAD_RATIO;
-            const minX = regionPadX;
-            const maxX = viewportW - regionPadX;
-            const minY = regionPadY;
-            const maxY = viewportH - regionPadY;
+            const bounds = getOrbitBounds(viewportW, viewportH);
+            const minX = bounds.minX;
+            const maxX = bounds.maxX;
+            const minY = bounds.minY;
+            const maxY = bounds.maxY;
             const avoidZones = buildOrbitAvoidZones();
             const viewportCenterX = viewportW * 0.5;
             const viewportCenterY = viewportH * DANCE_CENTER_Y_RATIO;
@@ -476,10 +500,11 @@
 
             const width = Math.max(120, feedEl.clientWidth || window.innerWidth);
             const height = Math.max(120, feedEl.clientHeight || window.innerHeight);
-            const minX = width * ORBIT_REGION_PAD_RATIO;
-            const maxX = width * (1 - ORBIT_REGION_PAD_RATIO);
-            const minY = height * ORBIT_REGION_PAD_RATIO;
-            const maxY = height * (1 - ORBIT_REGION_PAD_RATIO);
+            const bounds = getOrbitBounds(width, height);
+            const minX = bounds.minX;
+            const maxX = bounds.maxX;
+            const minY = bounds.minY;
+            const maxY = bounds.maxY;
             const startPoint = pickSafeOrbitPoint(minX, maxX, minY, maxY, avoidZones, width * 0.5, height * 0.5);
             const targetPoint = pickSafeOrbitPoint(minX, maxX, minY, maxY, avoidZones, width * 0.5, height * 0.5);
             const orbitNode = {

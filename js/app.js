@@ -1,7 +1,9 @@
 const contentContainer = document.getElementById('content');
 const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
 const TRANSITION_OUT_MS = 1200;
+const LOGO_INTERACTIVE_DELAY_MS = 5600;
 let isTransitioning = false;
+let logoInteractiveTimer = null;
 
 function isSafariBrowser() {
     const ua = navigator.userAgent || "";
@@ -18,6 +20,25 @@ if (isSafariBrowser()) {
 
 function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function clearLogoInteractiveTimer() {
+    if (logoInteractiveTimer !== null) {
+        clearTimeout(logoInteractiveTimer);
+        logoInteractiveTimer = null;
+    }
+}
+
+function scheduleLogoInteractive() {
+    clearLogoInteractiveTimer();
+    document.body.classList.remove("logo-interactive");
+    if (!document.body.classList.contains("intro-started")) return;
+    if (document.body.dataset.page !== "home") return;
+    logoInteractiveTimer = window.setTimeout(() => {
+        if (!document.body.classList.contains("intro-started")) return;
+        if (document.body.dataset.page !== "home") return;
+        document.body.classList.add("logo-interactive");
+    }, LOGO_INTERACTIVE_DELAY_MS);
 }
 
 // Load a page snippet
@@ -55,6 +76,7 @@ async function loadPage(page, options = {}) {
         window.dispatchEvent(new CustomEvent("pagechange", {
             detail: { page }
         }));
+        scheduleLogoInteractive();
 
         requestAnimationFrame(() => {
             contentContainer.classList.remove('is-fading');
@@ -114,6 +136,10 @@ document.addEventListener('click', event => {
 
 window.addEventListener('resize', () => {
     if (window.innerWidth > 768) closeMobileMenu();
+});
+
+window.addEventListener("introanimationcomplete", () => {
+    scheduleLogoInteractive();
 });
 
 // Persistent player state using localStorage

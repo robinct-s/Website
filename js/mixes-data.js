@@ -44,6 +44,18 @@ window.MIXES_DATA = [
         artworkRef: "assets/mixes/mix-04-evo-natura.jpg"
     },
     {
+        id: "canteen",
+        title: "CANTEEN",
+        platform: "YouTube",
+        artworkCredit: "",
+        dateIso: "2025-02-23",
+        dateLabel: "23/02/2025",
+        length: "56:44",
+        link: "https://www.youtube.com/watch?v=LcIdAD1qIz0&t=1850s",
+        linkLabel: "YouTube",
+        artworkRef: "assets/mixes/mix-08-canteen.jpg"
+    },
+    {
         id: "real-live-radio",
         title: "REAL LIVE RADIO",
         platform: "Retreat Radio",

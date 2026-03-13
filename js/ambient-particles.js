@@ -14,6 +14,7 @@
     const pointer = { x: 0, y: 0, active: false };
     const brandHero = document.querySelector(".brand-hero");
     const brandLogo = document.querySelector(".brand-hero .logo");
+    const logoRepulseTarget = document.getElementById("home-logo-interact") || brandLogo;
     const particles = [];
     const particleCount = IS_SAFARI ? 46 : 90;
     const INTERFERENCE_MIN_INTERVAL_MS = IS_SAFARI ? 120 : 75;
@@ -25,6 +26,11 @@
     const SCROLL_FORCE_MAX = 6.8;
     const PARTICLE_SCROLL_INFLUENCE = 1.45;
     const BEACON_SCROLL_INFLUENCE = 0.7;
+    const LOGO_REPULSE_RADIUS = 260;
+    const LOGO_REPULSE_DURATION_MS = 2000;
+    const LOGO_RETURN_DURATION_MS = 2600;
+    const LOGO_REPULSE_STRENGTH = 0.55;
+    const LOGO_REPULSE_DAMPING = 0.92;
     const BASE_BLACK = { r: 17, g: 17, b: 17 };
     const NATURAL_GREEN = { r: 126, g: 174, b: 124 };
     const WHITE = { r: 255, g: 255, b: 255 };
@@ -41,6 +47,8 @@
     let lastPointerMoveAt = 0;
     let beacon = null;
     let tintFrame = 0;
+    let logoRepulseAt = 0;
+    let logoRepulseCenter = { x: 0, y: 0 };
 
     function rand(min, max) {
         return Math.random() * (max - min) + min;
@@ -293,6 +301,26 @@
         brandHero.style.setProperty("--brand-tint-b", `${tintB}`);
     }
 
+    function triggerLogoRepulse() {
+        if (!logoRepulseTarget) return;
+        if (!document.body.classList.contains("intro-started")) return;
+        if (!document.body.classList.contains("logo-interactive")) return;
+        if (document.body.dataset.page !== "home") return;
+        const rect = logoRepulseTarget.getBoundingClientRect();
+        if (!rect || rect.width <= 0 || rect.height <= 0) return;
+        logoRepulseCenter = {
+            x: rect.left + rect.width * 0.5,
+            y: rect.top + rect.height * 0.5
+        };
+        logoRepulseAt = performance.now();
+        document.body.classList.remove("logo-repulse-active");
+        void document.body.offsetWidth;
+        document.body.classList.add("logo-repulse-active");
+        window.dispatchEvent(new CustomEvent("logorepulse", {
+            detail: { intensity: 0.75 }
+        }));
+    }
+
     function animate(time) {
         if (TARGET_FRAME_MS > 0 && time - lastFrameAt < TARGET_FRAME_MS) {
             rafId = requestAnimationFrame(animate);
@@ -341,6 +369,41 @@
             p.x += p.vx + Math.sin(p.phase) * 0.12 + pullX + reactX + toTargetX;
             p.y += p.vy + Math.cos(p.phase * 1.25) * 0.08 + pullY + reactY + toTargetY +
                 scrollDrift * (0.65 + p.homeRadius * 0.7) * PARTICLE_SCROLL_INFLUENCE;
+
+            if (logoRepulseAt > 0 && currentPage === "home") {
+                const elapsed = time - logoRepulseAt;
+                if (elapsed <= LOGO_REPULSE_DURATION_MS + LOGO_RETURN_DURATION_MS) {
+                    const dxLogo = p.x - logoRepulseCenter.x;
+                    const dyLogo = p.y - logoRepulseCenter.y;
+                    const distLogo = Math.hypot(dxLogo, dyLogo) || 0.0001;
+                    if (distLogo < LOGO_REPULSE_RADIUS) {
+                        const repulseT = 1 - Math.min(1, elapsed / LOGO_REPULSE_DURATION_MS);
+                        const returnT = Math.min(
+                            1,
+                            Math.max(0, (elapsed - LOGO_REPULSE_DURATION_MS) / LOGO_RETURN_DURATION_MS)
+                        );
+                        const falloff = 1 - distLogo / LOGO_REPULSE_RADIUS;
+                        const outward = repulseT * falloff * LOGO_REPULSE_STRENGTH;
+                        p.vx += (dxLogo / distLogo) * outward;
+                        p.vy += (dyLogo / distLogo) * outward;
+
+                        if (returnT > 0) {
+                            // Ease particles back into their formation with extra damping.
+                            p.vx *= (1 - returnT * 0.22);
+                            p.vy *= (1 - returnT * 0.22);
+                            p.vx += (target.x - p.x) * (0.0018 * returnT);
+                            p.vy += (target.y - p.y) * (0.0018 * returnT);
+                        }
+                    }
+                    // Global damping while the pulse is active to avoid runaway drift.
+                    p.vx *= LOGO_REPULSE_DAMPING;
+                    p.vy *= LOGO_REPULSE_DAMPING;
+                } else {
+                    logoRepulseAt = 0;
+                    p.vx *= 0.6;
+                    p.vy *= 0.6;
+                }
+            }
 
             if (p.x < -10) p.x = width + 10;
             if (p.x > width + 10) p.x = -10;
@@ -451,6 +514,15 @@
         pointer.active = true;
         pointerOverUi = true;
     }, { passive: true });
+
+    if (logoRepulseTarget) {
+        logoRepulseTarget.addEventListener("click", () => {
+            triggerLogoRepulse();
+        });
+        logoRepulseTarget.addEventListener("touchstart", () => {
+            triggerLogoRepulse();
+        }, { passive: true });
+    }
 
     window.addEventListener("wheel", (event) => {
         const delta = clamp(event.deltaY, -140, 140);
