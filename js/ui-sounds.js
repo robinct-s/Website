@@ -71,6 +71,7 @@
     const INTRO_LOGO_SOUND_GAP_MS = 520;
     const INTRO_SOUND_LOCK_MS = 1400;
     const HOME_SOUND_MIN_GAP_MS = 1600;
+    const MOBILE_POOL_SIZE = 3;
 
     let unlocked = false;
     let mutedForVideoFocus = false;
@@ -94,6 +95,8 @@
     let lastIntroTouchAt = 0;
     let introReadyForGeneralSounds = !document.body.classList.contains("pre-intro");
     const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+    const mobileSoundPool = {};
+    const mobileSoundIndex = {};
 
     Object.keys(UI_SOUND_SOURCES).forEach((key) => {
         const audio = new Audio();
@@ -101,6 +104,17 @@
         audio.src = UI_SOUND_SOURCES[key];
         audio.volume = UI_SOUND_VOLUME[key] ?? 0.2;
         baseSounds[key] = audio;
+
+        if (IS_MOBILE) {
+            mobileSoundPool[key] = [];
+            for (let i = 0; i < MOBILE_POOL_SIZE; i += 1) {
+                const pooled = new Audio();
+                pooled.preload = "auto";
+                pooled.src = UI_SOUND_SOURCES[key];
+                pooled.volume = UI_SOUND_VOLUME[key] ?? 0.2;
+                mobileSoundPool[key].push(pooled);
+            }
+        }
     });
 
     function primeAudio(audio) {
@@ -127,18 +141,31 @@
         Object.values(baseSounds).forEach((audio) => {
             primeAudio(audio);
         });
+        if (IS_MOBILE) {
+            Object.values(mobileSoundPool).forEach((pool) => {
+                pool.forEach((audio) => {
+                    primeAudio(audio);
+                });
+            });
+        }
     }
 
     function createSoundInstance(soundType) {
         const base = baseSounds[soundType];
         if (!base) return null;
-        if (IS_MOBILE) return base;
-        return base.cloneNode();
+        if (!IS_MOBILE) return base.cloneNode();
+        const pool = mobileSoundPool[soundType];
+        if (!pool || pool.length === 0) return base;
+        const index = mobileSoundIndex[soundType] || 0;
+        const sound = pool[index];
+        mobileSoundIndex[soundType] = (index + 1) % pool.length;
+        return sound;
     }
 
     function resetMobileSound(sound) {
         if (!IS_MOBILE) return;
         try {
+            sound.pause();
             sound.currentTime = 0;
         } catch {
             // Ignore if we cannot reset the playback position.
@@ -474,16 +501,10 @@
             if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
             window.setTimeout(() => {
                 playHomeSoundOnce();
-            }, IS_MOBILE ? 360 : 220);
+            }, 220);
             return;
         }
         if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
-        if (IS_MOBILE) {
-            window.setTimeout(() => {
-                playPageSound(page);
-            }, 260);
-            return;
-        }
         playPageSound(page);
     });
 
@@ -491,8 +512,6 @@
         if (!unlocked) return;
         const detail = event && event.detail ? event.detail : null;
         if (!detail || detail.page !== "home") return;
-        // Mobile already gets a timed home cue from animation flow; skip preload to avoid duplicate.
-        if (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) return;
         // app.js waits 1200ms before loading nav pages; 200ms delay lands ~1s earlier.
         window.setTimeout(() => {
             playHomeSoundOnce();
