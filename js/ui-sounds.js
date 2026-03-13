@@ -71,8 +71,6 @@
     const INTRO_LOGO_SOUND_GAP_MS = 520;
     const INTRO_SOUND_LOCK_MS = 1400;
     const HOME_SOUND_MIN_GAP_MS = 1600;
-    const MOBILE_SOUND_COOLDOWN_MS = 140;
-    const MOBILE_POOL_SIZE = 2;
 
     let unlocked = false;
     let mutedForVideoFocus = false;
@@ -96,9 +94,6 @@
     let lastIntroTouchAt = 0;
     let introReadyForGeneralSounds = !document.body.classList.contains("pre-intro");
     const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
-    const mobileSoundPool = {};
-    const mobileSoundIndex = {};
-    const mobileSoundLastAt = {};
 
     Object.keys(UI_SOUND_SOURCES).forEach((key) => {
         const audio = new Audio();
@@ -106,17 +101,6 @@
         audio.src = UI_SOUND_SOURCES[key];
         audio.volume = UI_SOUND_VOLUME[key] ?? 0.2;
         baseSounds[key] = audio;
-
-        if (IS_MOBILE) {
-            mobileSoundPool[key] = [];
-            for (let i = 0; i < MOBILE_POOL_SIZE; i += 1) {
-                const pooled = new Audio();
-                pooled.preload = "auto";
-                pooled.src = UI_SOUND_SOURCES[key];
-                pooled.volume = UI_SOUND_VOLUME[key] ?? 0.2;
-                mobileSoundPool[key].push(pooled);
-            }
-        }
     });
 
     function primeAudio(audio) {
@@ -143,34 +127,22 @@
         Object.values(baseSounds).forEach((audio) => {
             primeAudio(audio);
         });
-        if (IS_MOBILE) {
-            Object.values(mobileSoundPool).forEach((pool) => {
-                pool.forEach((audio) => {
-                    primeAudio(audio);
-                });
-            });
-        }
-    }
-
-    function shouldThrottleMobileSound(soundType, minGapMs = MOBILE_SOUND_COOLDOWN_MS) {
-        if (!IS_MOBILE) return false;
-        const now = performance.now();
-        const lastAt = mobileSoundLastAt[soundType] || 0;
-        if (now - lastAt < minGapMs) return true;
-        mobileSoundLastAt[soundType] = now;
-        return false;
     }
 
     function createSoundInstance(soundType) {
         const base = baseSounds[soundType];
         if (!base) return null;
-        if (!IS_MOBILE) return base.cloneNode();
-        const pool = mobileSoundPool[soundType];
-        if (!pool || pool.length === 0) return base;
-        const index = mobileSoundIndex[soundType] || 0;
-        const sound = pool[index];
-        mobileSoundIndex[soundType] = (index + 1) % pool.length;
-        return sound;
+        if (IS_MOBILE) return base;
+        return base.cloneNode();
+    }
+
+    function resetMobileSound(sound) {
+        if (!IS_MOBILE) return;
+        try {
+            sound.currentTime = 0;
+        } catch {
+            // Ignore if we cannot reset the playback position.
+        }
     }
 
     function getSoundType(target) {
@@ -225,18 +197,11 @@
 
     function playUiClick(soundType) {
         if (mutedForVideoFocus) return;
-        if (shouldThrottleMobileSound(soundType)) return;
         const clickSound = createSoundInstance(soundType);
         if (!clickSound) return;
 
         clickSound.volume = UI_SOUND_VOLUME[soundType] ?? 0.2;
-        if (IS_MOBILE) {
-            try {
-                clickSound.currentTime = 0;
-            } catch {
-                // Ignore if we cannot reset the playback position.
-            }
-        }
+        resetMobileSound(clickSound);
         clickSound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });
@@ -297,7 +262,6 @@
 
     function playInPageHoverSound() {
         if (mutedForVideoFocus) return;
-        if (shouldThrottleMobileSound("inPageHover", IN_PAGE_HOVER_GAP_MS)) return;
         const sound = createSoundInstance("inPageHover");
         if (!sound) return;
         const baseVolume = UI_SOUND_VOLUME.inPageHover ?? 0.12;
@@ -321,13 +285,7 @@
         }
         sound.playbackRate = rate;
         lastInPageHoverRate = rate;
-        if (IS_MOBILE) {
-            try {
-                sound.currentTime = 0;
-            } catch {
-                // Ignore if we cannot reset the playback position.
-            }
-        }
+        resetMobileSound(sound);
         sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });
@@ -335,7 +293,6 @@
 
     function playInWorksClickSound() {
         if (mutedForVideoFocus) return;
-        if (shouldThrottleMobileSound("inWorksPageClick")) return;
         const sound = createSoundInstance("inWorksPageClick");
         if (!sound) return;
         const baseVolume = UI_SOUND_VOLUME.inWorksPageClick ?? 0.18;
@@ -343,13 +300,7 @@
         sound.volume = Math.max(0, Math.min(1, baseVolume * volumeScale));
         sound.playbackRate = randomBetween(IN_WORKS_CLICK_RATE_MIN, IN_WORKS_CLICK_RATE_MAX);
         applyTailFade(sound, IN_WORKS_CLICK_TAIL_FADE_MS);
-        if (IS_MOBILE) {
-            try {
-                sound.currentTime = 0;
-            } catch {
-                // Ignore if we cannot reset the playback position.
-            }
-        }
+        resetMobileSound(sound);
         sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });
@@ -364,18 +315,11 @@
     function playAboutBeacon(detail) {
         if (!unlocked || mutedForVideoFocus) return;
         const intensity = Math.max(0, Math.min(1, detail && detail.intensity != null ? detail.intensity : 0.5));
-        if (shouldThrottleMobileSound("aboutBeacon", 120)) return;
         const sound = createSoundInstance("aboutBeacon");
         if (!sound) return;
         sound.playbackRate = 0.76 + intensity * 0.4;
         sound.volume = (UI_SOUND_VOLUME.aboutBeacon ?? 0.17) * (0.42 + intensity * 0.55);
-        if (IS_MOBILE) {
-            try {
-                sound.currentTime = 0;
-            } catch {
-                // Ignore if we cannot reset the playback position.
-            }
-        }
+        resetMobileSound(sound);
         sound.play().catch(() => {
             // Missing file or blocked autoplay should fail silently.
         });
@@ -384,19 +328,12 @@
     function playVisitorWhisper(detail) {
         if (!unlocked || mutedForVideoFocus) return;
         const intensity = Math.max(0, Math.min(1, detail && detail.intensity != null ? detail.intensity : 0.7));
-        if (shouldThrottleMobileSound("visitorWhisper", 120)) return;
         const sound = createSoundInstance("visitorWhisper");
         if (!sound) return;
         sound.playbackRate = 0.58 + intensity * 0.25 + randomBetween(-0.03, 0.03);
         sound.volume = (UI_SOUND_VOLUME.visitorWhisper ?? 0.14) * (0.45 + intensity * 0.42);
         applyTailFade(sound, 140);
-        if (IS_MOBILE) {
-            try {
-                sound.currentTime = 0;
-            } catch {
-                // Ignore if we cannot reset the playback position.
-            }
-        }
+        resetMobileSound(sound);
         sound.play().catch(() => {
             // Missing file or blocked autoplay should fail silently.
         });
@@ -406,7 +343,6 @@
         if (!unlocked || mutedForVideoFocus) return;
         const active = !!(detail && detail.active);
         const soundType = active ? "visitorFormationIn" : "visitorFormationOut";
-        if (shouldThrottleMobileSound(soundType, 120)) return;
         const sound = createSoundInstance(soundType);
         if (!sound) return;
         sound.playbackRate = active ? 0.78 : 0.95;
@@ -415,13 +351,7 @@
             : (UI_SOUND_VOLUME.visitorFormationOut ?? 0.16);
         sound.volume = baseVolume * (active ? 0.9 : 0.78);
         applyTailFade(sound, 180);
-        if (IS_MOBILE) {
-            try {
-                sound.currentTime = 0;
-            } catch {
-                // Ignore if we cannot reset the playback position.
-            }
-        }
+        resetMobileSound(sound);
         sound.play().catch(() => {
             // Missing file or blocked autoplay should fail silently.
         });
@@ -441,13 +371,7 @@
             const volume = (UI_SOUND_VOLUME.particle ?? 0.12) * (0.65 + intensity * 0.55);
             particleSound.playbackRate = rate;
             particleSound.volume = volume;
-            if (IS_MOBILE) {
-                try {
-                    particleSound.currentTime = 0;
-                } catch {
-                    // Ignore if we cannot reset the playback position.
-                }
-            }
+            resetMobileSound(particleSound);
             particleSound.play().catch(() => {
                 // Missing file or blocked autoplay should fail silently.
             });
@@ -530,19 +454,12 @@
     window.addEventListener("wheel", (event) => {
         if (!unlocked || mutedForVideoFocus) return;
 
-        if (shouldThrottleMobileSound("scrollWheel", 120)) return;
         const sound = createSoundInstance("scrollWheel");
         if (!sound) return;
         const delta = Math.min(1, Math.abs(event.deltaY || 0) / 140);
         sound.playbackRate = 0.92 + delta * 0.24 + randomBetween(-0.03, 0.03);
         sound.volume = (UI_SOUND_VOLUME.scrollWheel ?? 0.11) * (0.72 + delta * 0.5);
-        if (IS_MOBILE) {
-            try {
-                sound.currentTime = 0;
-            } catch {
-                // Ignore if we cannot reset the playback position.
-            }
-        }
+        resetMobileSound(sound);
         sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });
