@@ -48,6 +48,7 @@ let introCompletionTimer = null;
 let resumeAfterVideoFocus = false;
 let videoModeSilenced = false;
 let videoFocusModeActive = false;
+let introActivationHandled = false;
 
 function setPlayButtonState(playing) {
     if (!playPauseBtn) return;
@@ -265,7 +266,9 @@ playPauseBtn.addEventListener("click", () => {
 });
 
 if (introLogoTrigger) {
-    introLogoTrigger.addEventListener("click", () => {
+    const handleIntroActivation = () => {
+        if (introActivationHandled) return;
+        introActivationHandled = true;
         startIntro();
         const savedVolume = localStorage.getItem("player-volume");
         if (!savedVolume) {
@@ -280,7 +283,11 @@ if (introLogoTrigger) {
         }
         isPlaying = true;
         setPlayButtonState(true);
-    });
+    };
+
+    introLogoTrigger.addEventListener("click", handleIntroActivation);
+    introLogoTrigger.addEventListener("touchstart", handleIntroActivation, { passive: true });
+    introLogoTrigger.addEventListener("pointerdown", handleIntroActivation, { passive: true });
 }
 
 // ---------- Next / Previous ----------
