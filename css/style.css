@@ -2698,11 +2698,32 @@ body.safari-perf .visitors-panel {
     }
 
     #track-title {
-        max-width: 90px;
+        max-width: 140px;
+        text-align: center;
     }
 
     #volume-slider {
-        width: 60px;
+        width: 90px;
+        height: 22px;
+    }
+
+    #volume-slider::-webkit-slider-runnable-track {
+        height: 4px;
+    }
+
+    #volume-slider::-webkit-slider-thumb {
+        width: 8px;
+        height: 18px;
+        margin-top: -7px;
+    }
+
+    #volume-slider::-moz-range-track {
+        height: 4px;
+    }
+
+    #volume-slider::-moz-range-thumb {
+        width: 8px;
+        height: 18px;
     }
 
     .hero h1 {

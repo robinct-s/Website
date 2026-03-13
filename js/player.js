@@ -95,7 +95,15 @@ function playWithFadeIn(durationMs = AUDIO_FADE_IN_MS) {
     cancelVolumeFade();
 
     player.volume = 0;
-    player.play();
+    const playPromise = player.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+            cancelVolumeFade();
+            player.pause();
+            isPlaying = false;
+            setPlayButtonState(false);
+        });
+    }
 
     const startTime = performance.now();
     const step = (now) => {
@@ -140,6 +148,7 @@ function fadeOutToSilence(durationMs = 820) {
     };
 
     fadeVolumeFrame = requestAnimationFrame(step);
+    return playPromise;
 }
 
 function fadeToTargetVolume(durationMs = 900) {

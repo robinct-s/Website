@@ -101,11 +101,19 @@
         unlocked = true;
         // Some browsers need an interaction before short SFX can play reliably.
         Object.values(baseSounds).forEach((audio) => {
+            const prevVolume = audio.volume;
+            const prevMuted = audio.muted;
+            audio.muted = true;
+            audio.volume = 0;
             audio.play().then(() => {
                 audio.pause();
                 audio.currentTime = 0;
+                audio.muted = prevMuted;
+                audio.volume = prevVolume;
             }).catch(() => {
                 // Missing file or blocked autoplay should fail silently.
+                audio.muted = prevMuted;
+                audio.volume = prevVolume;
             });
         });
     }
@@ -369,6 +377,7 @@
     }, { passive: true });
 
     document.addEventListener("pointerover", (event) => {
+        if (event.pointerType && event.pointerType !== "mouse") return;
         const hoverTarget = getHoverSoundTarget(event.target);
         if (!hoverTarget) return;
         const hoverNode = hoverTarget.node;
