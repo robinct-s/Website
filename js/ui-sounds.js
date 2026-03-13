@@ -70,6 +70,7 @@
     const IN_WORKS_CLICK_TAIL_FADE_MS = 110;
     const INTRO_LOGO_SOUND_GAP_MS = 520;
     const INTRO_SOUND_LOCK_MS = 1400;
+    const HOME_SOUND_MIN_GAP_MS = 1600;
 
     let unlocked = false;
     let mutedForVideoFocus = false;
@@ -88,9 +89,11 @@
     let lastInPageHoverAt = 0;
     let lastInPageHoverRate = null;
     let lastIntroLogoSoundAt = 0;
+    let lastHomeSoundAt = 0;
     let introSoundLockUntil = 0;
     let lastIntroTouchAt = 0;
     let introReadyForGeneralSounds = !document.body.classList.contains("pre-intro");
+    const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
 
     Object.keys(UI_SOUND_SOURCES).forEach((key) => {
         const audio = new Audio();
@@ -197,6 +200,14 @@
 
     function isIntroSoundLocked() {
         return performance.now() < introSoundLockUntil;
+    }
+
+    function playHomeSoundOnce() {
+        if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
+        const now = performance.now();
+        if (now - lastHomeSoundAt < HOME_SOUND_MIN_GAP_MS) return;
+        lastHomeSoundAt = now;
+        playPageSound("home");
     }
 
     function randomBetween(min, max) {
@@ -380,6 +391,7 @@
         const soundType = getSoundType(event.target);
         if (!soundType) return;
         if (soundType === "logo" && shouldSkipIntroLogoSound()) return;
+        if (soundType.startsWith("player") && (!introReadyForGeneralSounds || isIntroSoundLocked())) return;
         if (!introReadyForGeneralSounds && soundType !== "logo") return;
         if (soundType !== "logo" && isIntroSoundLocked()) return;
         playUiClick(soundType);
@@ -436,8 +448,20 @@
         const page = event && event.detail && event.detail.page;
         if (!page) return;
         // Home plays earlier from pagewillchange to feel more immediate.
-        if (page === "home") return;
+        if (page === "home") {
+            if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
+            window.setTimeout(() => {
+                playHomeSoundOnce();
+            }, IS_MOBILE ? 360 : 220);
+            return;
+        }
         if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
+        if (IS_MOBILE) {
+            window.setTimeout(() => {
+                playPageSound(page);
+            }, 260);
+            return;
+        }
         playPageSound(page);
     });
 
@@ -449,7 +473,7 @@
         if (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) return;
         // app.js waits 1200ms before loading nav pages; 200ms delay lands ~1s earlier.
         window.setTimeout(() => {
-            playPageSound("home");
+            playHomeSoundOnce();
         }, HOME_PRELOAD_DELAY_MS);
     });
 
@@ -459,7 +483,7 @@
         if (page !== "home") return;
         introReadyForGeneralSounds = true;
         lockIntroSounds();
-        playPageSound("home");
+        playHomeSoundOnce();
     });
 
     window.addEventListener("logorepulse", () => {
