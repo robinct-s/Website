@@ -34,6 +34,8 @@ const AUDIO_FADE_IN_MS = 1800;
 const INTRO_CLICK_ANIM_MS = 1050;
 const INTRO_SWAP_DELAY_MS = 1410;
 const INTRO_SWAP_AFTER_CLICK_ANIM_MS = INTRO_SWAP_DELAY_MS - INTRO_CLICK_ANIM_MS;
+const INTRO_MOBILE_FADE_MS = 2600;
+const DEFAULT_VOLUME = 0.2;
 
 let currentTrack = 0;
 let isPlaying = false;
@@ -265,10 +267,16 @@ playPauseBtn.addEventListener("click", () => {
 if (introLogoTrigger) {
     introLogoTrigger.addEventListener("click", () => {
         startIntro();
+        const savedVolume = localStorage.getItem("player-volume");
+        if (!savedVolume) {
+            volumeSlider.value = DEFAULT_VOLUME;
+            player.volume = DEFAULT_VOLUME;
+        }
         if (!player.src) loadTrack(currentTrack);
         if (!player.src) return;
         if (player.paused) {
-            playWithFadeIn();
+            const isMobile = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+            playWithFadeIn(isMobile ? INTRO_MOBILE_FADE_MS : AUDIO_FADE_IN_MS);
         }
         isPlaying = true;
         setPlayButtonState(true);
@@ -315,6 +323,9 @@ window.addEventListener("load", () => {
     if (savedVolume) {
         player.volume = parseFloat(savedVolume);
         volumeSlider.value = player.volume;
+    } else {
+        player.volume = DEFAULT_VOLUME;
+        volumeSlider.value = DEFAULT_VOLUME;
     }
 
     introStarted = document.body.classList.contains("intro-started");

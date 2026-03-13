@@ -69,6 +69,7 @@
     const IN_WORKS_CLICK_VOL_JITTER = 0.12;
     const IN_WORKS_CLICK_TAIL_FADE_MS = 110;
     const INTRO_LOGO_SOUND_GAP_MS = 520;
+    const INTRO_SOUND_LOCK_MS = 1400;
 
     let unlocked = false;
     let mutedForVideoFocus = false;
@@ -87,6 +88,9 @@
     let lastInPageHoverAt = 0;
     let lastInPageHoverRate = null;
     let lastIntroLogoSoundAt = 0;
+    let introSoundLockUntil = 0;
+    let lastIntroTouchAt = 0;
+    let introReadyForGeneralSounds = !document.body.classList.contains("pre-intro");
 
     Object.keys(UI_SOUND_SOURCES).forEach((key) => {
         const audio = new Audio();
@@ -185,6 +189,14 @@
         if (now - lastIntroLogoSoundAt < INTRO_LOGO_SOUND_GAP_MS) return true;
         lastIntroLogoSoundAt = now;
         return false;
+    }
+
+    function lockIntroSounds() {
+        introSoundLockUntil = performance.now() + INTRO_SOUND_LOCK_MS;
+    }
+
+    function isIntroSoundLocked() {
+        return performance.now() < introSoundLockUntil;
     }
 
     function randomBetween(min, max) {
@@ -350,14 +362,17 @@
     window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
 
     document.addEventListener("click", (event) => {
+        if (lastIntroTouchAt && performance.now() - lastIntroTouchAt < 700) return;
         const navSoundType = getNavSoundType(event.target);
         if (navSoundType) {
+            if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
             playUiClick(navSoundType);
             return;
         }
 
         const worksNode = getWorksMenuNode(event.target);
         if (worksNode) {
+            if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
             playInWorksClickSound();
             return;
         }
@@ -365,6 +380,8 @@
         const soundType = getSoundType(event.target);
         if (!soundType) return;
         if (soundType === "logo" && shouldSkipIntroLogoSound()) return;
+        if (!introReadyForGeneralSounds && soundType !== "logo") return;
+        if (soundType !== "logo" && isIntroSoundLocked()) return;
         playUiClick(soundType);
     });
 
@@ -372,6 +389,8 @@
         const target = event.target;
         if (!target || !target.closest) return;
         if (!target.closest("#intro-logo-trigger")) return;
+        lastIntroTouchAt = performance.now();
+        lockIntroSounds();
         if (shouldSkipIntroLogoSound()) return;
         playUiClick("logo");
     }, { passive: true });
@@ -418,6 +437,7 @@
         if (!page) return;
         // Home plays earlier from pagewillchange to feel more immediate.
         if (page === "home") return;
+        if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
         playPageSound(page);
     });
 
@@ -437,28 +457,35 @@
         if (!unlocked) return;
         const page = event && event.detail && event.detail.page;
         if (page !== "home") return;
+        introReadyForGeneralSounds = true;
+        lockIntroSounds();
         playPageSound("home");
     });
 
     window.addEventListener("logorepulse", () => {
         if (!unlocked) return;
+        if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
         playUiClick("logoRepulse");
     });
 
     window.addEventListener("workstabchange", () => {
         if (!unlocked) return;
+        if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
         playUiClick("worksTab");
     });
 
     window.addEventListener("aboutbeaconproximity", (event) => {
+        if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
         playAboutBeacon(event && event.detail ? event.detail : {});
     });
 
     window.addEventListener("visitorparticlehover", (event) => {
+        if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
         playVisitorWhisper(event && event.detail ? event.detail : {});
     });
 
     window.addEventListener("visitorformationchange", (event) => {
+        if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
         playVisitorFormationShift(event && event.detail ? event.detail : {});
     });
 
