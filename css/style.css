@@ -642,10 +642,11 @@ main#content.hide-home-tagline .hero p {
 
 .visitors-head h3 {
     margin: 0;
-    font-size: 0.61rem;
-    letter-spacing: 1.05px;
+    font-size: 0.56rem;
+    font-weight: 400;
+    letter-spacing: 0.9px;
     text-transform: uppercase;
-    color: rgba(17, 17, 17, 0.75);
+    color: rgba(17, 17, 17, 0.68);
 }
 
 .visitors-meta {
@@ -2831,7 +2832,9 @@ body.safari-perf .visitors-panel {
         z-index: 9;
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
         overflow: hidden;
-        transition: max-height 0.6s ease, box-shadow 0.35s ease, border-color 0.25s ease;
+        transition: max-height 0.85s cubic-bezier(0.4, 0, 0.2, 1),
+            box-shadow 0.5s ease,
+            border-color 0.35s ease;
     }
 
     .visitors-panel:not([open]) {
@@ -2864,11 +2867,13 @@ body.safari-perf .visitors-panel {
     .visitors-panel summary {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
         gap: 10px;
         cursor: pointer;
         pointer-events: auto;
         min-height: 40px;
+        position: relative;
+        padding-right: 20px;
     }
 
     .visitors-panel summary::after {
@@ -2877,31 +2882,39 @@ body.safari-perf .visitors-panel {
         height: 10px;
         border-right: 1px solid rgba(17, 17, 17, 0.7);
         border-bottom: 1px solid rgba(17, 17, 17, 0.7);
-        transform: rotate(-45deg);
-        transition: transform 0.25s ease;
-        margin-right: 4px;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%) rotate(-45deg);
+        transition: transform 0.35s ease;
     }
 
     .visitors-panel[open] summary::after {
-        transform: rotate(135deg);
+        transform: translateY(-50%) rotate(135deg);
     }
 
     .visitors-panel .visitors-head {
         margin-bottom: 0;
+        width: 100%;
+        justify-content: center;
+        text-align: center;
     }
 
     .visitors-panel .visitors-head h3 {
-        font-size: 0.52rem;
-        letter-spacing: 0.9px;
+        font-size: 0.48rem;
+        font-weight: 400;
+        letter-spacing: 0.8px;
         line-height: 1.1;
         white-space: nowrap;
+        color: rgba(17, 17, 17, 0.68);
     }
 
     .visitors-panel .visitor-form {
         max-height: 0;
         opacity: 0;
         pointer-events: none;
-        transition: max-height 0.35s ease, opacity 0.25s ease;
+        transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.35s ease;
     }
 
     .visitors-panel[open] .visitor-form {
