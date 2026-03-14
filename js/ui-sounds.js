@@ -162,6 +162,21 @@
         });
     }
 
+    function preloadCriticalSoundFiles() {
+        ["logo", "logoRepulse"].forEach((key) => {
+            const audio = baseSounds[key];
+            if (audio) {
+                audio.load();
+            }
+            if (IS_MOBILE) {
+                const pool = mobileSoundPool[key];
+                if (pool && pool[0]) {
+                    pool[0].load();
+                }
+            }
+        });
+    }
+
     function createSoundInstance(soundType) {
         const base = baseSounds[soundType];
         if (!base) return null;
@@ -446,6 +461,7 @@
     window.addEventListener("pointerdown", unlockAudio, { once: true });
     window.addEventListener("wheel", unlockAudio, { once: true, passive: true });
     window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
+    window.addEventListener("DOMContentLoaded", preloadCriticalSoundFiles, { once: true });
 
     function handleUiClickEvent(event) {
         if (lastIntroTouchAt && performance.now() - lastIntroTouchAt < 700) return;
