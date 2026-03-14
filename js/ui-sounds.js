@@ -93,8 +93,10 @@
     let lastHomeSoundAt = 0;
     let introSoundLockUntil = 0;
     let lastIntroTouchAt = 0;
+    let lastTouchLikeAt = 0;
     let introReadyForGeneralSounds = !document.body.classList.contains("pre-intro");
     const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+    const SUPPORTS_POINTER = "PointerEvent" in window;
     const mobileSoundPool = {};
     const mobileSoundIndex = {};
 
@@ -421,7 +423,7 @@
     window.addEventListener("wheel", unlockAudio, { once: true, passive: true });
     window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
 
-    document.addEventListener("click", (event) => {
+    function handleUiClickEvent(event) {
         if (lastIntroTouchAt && performance.now() - lastIntroTouchAt < 700) return;
         const navSoundType = getNavSoundType(event.target);
         if (navSoundType) {
@@ -444,13 +446,37 @@
         if (!introReadyForGeneralSounds && soundType !== "logo") return;
         if (soundType !== "logo" && isIntroSoundLocked()) return;
         playUiClick(soundType);
+    }
+
+    document.addEventListener("click", (event) => {
+        if (lastTouchLikeAt && performance.now() - lastTouchLikeAt < 700) return;
+        unlockAudio();
+        handleUiClickEvent(event);
     });
+
+    if (SUPPORTS_POINTER) {
+        document.addEventListener("pointerdown", (event) => {
+            if (event.pointerType && event.pointerType !== "mouse") {
+                lastTouchLikeAt = performance.now();
+                unlockAudio();
+                handleUiClickEvent(event);
+            }
+        }, { passive: true });
+    } else {
+        document.addEventListener("touchstart", (event) => {
+            lastTouchLikeAt = performance.now();
+            unlockAudio();
+            handleUiClickEvent(event);
+        }, { passive: true });
+    }
 
     document.addEventListener("touchstart", (event) => {
         const target = event.target;
         if (!target || !target.closest) return;
         if (!target.closest("#intro-logo-trigger")) return;
         lastIntroTouchAt = performance.now();
+        lastTouchLikeAt = lastIntroTouchAt;
+        unlockAudio();
         lockIntroSounds();
         if (shouldSkipIntroLogoSound()) return;
         playUiClick("logo");
