@@ -107,7 +107,8 @@
         "navClick",
         "player",
         "playerPlay",
-        "playerPause"
+        "playerPause",
+        "pageHome"
     ]);
 
     Object.keys(UI_SOUND_SOURCES).forEach((key) => {
@@ -163,7 +164,7 @@
     }
 
     function preloadCriticalSoundFiles() {
-        ["logo", "logoRepulse"].forEach((key) => {
+        ["logo", "logoRepulse", "pageHome"].forEach((key) => {
             const audio = baseSounds[key];
             if (audio) {
                 audio.load();
