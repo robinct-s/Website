@@ -206,7 +206,7 @@
         if (visitorsSummary) {
             const panel = visitorsSummary.closest(".visitors-panel");
             if (panel && panel.hasAttribute("open")) return null;
-            return "menu";
+            return "inWorksPageClick";
         }
         if (target.closest("#intro-logo-trigger")) return "logo";
         if (target.closest("#play-pause")) {

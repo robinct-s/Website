@@ -37,6 +37,15 @@
         return window.innerWidth <= 768;
     }
 
+    function syncVisitorPanelViewport(panel) {
+        if (!panel) return;
+        if (isMobileViewport()) {
+            panel.removeAttribute("open");
+        } else {
+            panel.setAttribute("open", "");
+        }
+    }
+
     function clampText(value, maxLen) {
         return (value || "").trim().replace(/\s+/g, " ").slice(0, maxLen);
     }
@@ -668,11 +677,15 @@
             setNote(noteEl, "Username locked.");
         }
 
-        if (isMobileViewport()) {
-            panel.removeAttribute("open");
-        } else {
-            panel.setAttribute("open", "");
-        }
+        syncVisitorPanelViewport(panel);
+        panel.addEventListener("toggle", () => {
+            if (!isMobileViewport()) {
+                panel.setAttribute("open", "");
+            }
+        });
+        window.addEventListener("resize", () => {
+            syncVisitorPanelViewport(panel);
+        });
 
         const loadFeed = async () => {
             try {

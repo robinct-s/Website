@@ -120,6 +120,10 @@ body.logo-interactive .brand-hero .logo {
     z-index: 6;
     opacity: 0;
     pointer-events: none;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body.logo-interactive #home-logo-interact {
@@ -666,6 +670,10 @@ main#content.hide-home-tagline .hero p {
     display: none;
 }
 
+.visitors-panel summary::marker {
+    content: "";
+}
+
 .visitor-field {
     display: grid;
     gap: 2px;
@@ -1139,6 +1147,10 @@ main#content {
     opacity: 1;
     cursor: pointer;
     transition: opacity 0.45s ease, transform 0.3s ease;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 #intro-open-note {
@@ -2819,7 +2831,7 @@ body.safari-perf .visitors-panel {
         z-index: 9;
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
         overflow: hidden;
-        transition: max-height 0.38s ease, box-shadow 0.3s ease, border-color 0.2s ease;
+        transition: max-height 0.6s ease, box-shadow 0.35s ease, border-color 0.25s ease;
     }
 
     .visitors-panel:not([open]) {
@@ -2856,6 +2868,7 @@ body.safari-perf .visitors-panel {
         gap: 10px;
         cursor: pointer;
         pointer-events: auto;
+        min-height: 40px;
     }
 
     .visitors-panel summary::after {
@@ -2871,6 +2884,17 @@ body.safari-perf .visitors-panel {
 
     .visitors-panel[open] summary::after {
         transform: rotate(135deg);
+    }
+
+    .visitors-panel .visitors-head {
+        margin-bottom: 0;
+    }
+
+    .visitors-panel .visitors-head h3 {
+        font-size: 0.52rem;
+        letter-spacing: 0.9px;
+        line-height: 1.1;
+        white-space: nowrap;
     }
 
     .visitors-panel .visitor-form {
