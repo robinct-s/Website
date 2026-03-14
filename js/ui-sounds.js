@@ -152,7 +152,6 @@
         unlocked = true;
         // Some browsers need an interaction before short SFX can play reliably.
         Object.keys(baseSounds).forEach((key) => {
-            if (!CRITICAL_SOUNDS.has(key)) return;
             const audio = baseSounds[key];
             if (audio) primeAudio(audio);
             primedSounds.add(key);
@@ -295,7 +294,7 @@
         if (!introReadyForGeneralSounds) return;
         if (!options.ignoreLock && isIntroSoundLocked()) return;
         const now = performance.now();
-        if (now - lastHomeSoundAt < HOME_SOUND_MIN_GAP_MS) return;
+        if (!options.force && now - lastHomeSoundAt < HOME_SOUND_MIN_GAP_MS) return;
         lastHomeSoundAt = now;
         playPageSound("home");
     }
@@ -598,9 +597,10 @@
         if (page !== "home") return;
         introReadyForGeneralSounds = true;
         lockIntroSounds();
+        const delayMs = IS_MOBILE ? 0 : 120;
         window.setTimeout(() => {
-            playHomeSoundOnce({ ignoreLock: true });
-        }, 120);
+            playHomeSoundOnce({ ignoreLock: true, force: IS_MOBILE });
+        }, delayMs);
     });
 
     window.addEventListener("logorepulse", () => {

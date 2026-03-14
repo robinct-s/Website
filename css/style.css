@@ -2839,6 +2839,7 @@ body.safari-perf .visitors-panel {
 
     .visitors-panel:not([open]) {
         max-height: 56px;
+        display: flex;
     }
 
     .visitors-panel[open] {
@@ -2873,7 +2874,10 @@ body.safari-perf .visitors-panel {
         pointer-events: auto;
         min-height: 40px;
         position: relative;
-        padding-right: 20px;
+        padding: 8px 28px 8px 12px;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
     }
 
     .visitors-panel summary::after {
@@ -2901,7 +2905,7 @@ body.safari-perf .visitors-panel {
     }
 
     .visitors-panel .visitors-head h3 {
-        font-size: 0.48rem;
+        font-size: 0.44rem;
         font-weight: 400;
         letter-spacing: 0.8px;
         line-height: 1.1;
