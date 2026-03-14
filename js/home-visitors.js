@@ -33,6 +33,10 @@
     let freeScatterUntil = 0;
     let lastOrbitFrameAt = 0;
 
+    function isMobileViewport() {
+        return window.innerWidth <= 768;
+    }
+
     function clampText(value, maxLen) {
         return (value || "").trim().replace(/\s+/g, " ").slice(0, maxLen);
     }
@@ -169,7 +173,12 @@
 
     function buildOrbitAvoidZones() {
         const selectors = [".visitors-header"];
-        if (window.innerWidth > 768) selectors.push(".visitors-panel");
+        const panel = document.querySelector(".visitors-panel");
+        if (window.innerWidth > 768) {
+            selectors.push(".visitors-panel");
+        } else if (panel && panel.classList.contains("is-expanded")) {
+            selectors.push(".visitors-panel");
+        }
         const pad = window.innerWidth <= 768 ? ORBIT_AVOID_PADDING + 10 : ORBIT_AVOID_PADDING;
         const zones = [];
         selectors.forEach((selector) => {
@@ -192,7 +201,7 @@
         const regionPadX = viewportW * ORBIT_REGION_PAD_RATIO;
         const regionPadY = viewportH * ORBIT_REGION_PAD_RATIO;
         let minY = regionPadY;
-        const maxY = viewportH - regionPadY;
+        let maxY = viewportH - regionPadY;
 
         if (window.innerWidth <= 768) {
             const header = document.querySelector(".visitors-header");
@@ -201,6 +210,15 @@
                 if (rect && rect.height > 0) {
                     const pad = ORBIT_AVOID_PADDING + 12;
                     minY = Math.max(minY, rect.bottom + pad);
+                }
+            }
+
+            const panel = document.querySelector(".visitors-panel");
+            if (panel && panel.classList.contains("is-expanded")) {
+                const rect = panel.getBoundingClientRect();
+                if (rect && rect.height > 0) {
+                    const pad = ORBIT_AVOID_PADDING + 12;
+                    maxY = Math.min(maxY, rect.top - pad);
                 }
             }
         }
@@ -632,6 +650,7 @@
         });
 
         const form = panel.querySelector("#visitor-form");
+        const toggleBtn = panel.querySelector("#visitor-panel-toggle");
         const nameInput = panel.querySelector("#visitor-name");
         const messageInput = panel.querySelector("#visitor-message");
         const noteEl = panel.querySelector("#visitor-note");
@@ -648,6 +667,24 @@
         if (savedName) {
             lockUsername(nameInput, savedName);
             setNote(noteEl, "Username locked.");
+        }
+
+        if (toggleBtn) {
+            const updateToggle = () => {
+                const expanded = panel.classList.contains("is-expanded");
+                toggleBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+                toggleBtn.textContent = expanded ? "Close" : "Comment";
+            };
+            if (isMobileViewport()) {
+                panel.classList.remove("is-expanded");
+                updateToggle();
+                toggleBtn.addEventListener("click", () => {
+                    panel.classList.toggle("is-expanded");
+                    updateToggle();
+                });
+            } else {
+                updateToggle();
+            }
         }
 
         const loadFeed = async () => {

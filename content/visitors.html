@@ -2,7 +2,7 @@
     <header class="visitors-header">
         <h2 id="visitors-page-title">Visitors</h2>
         <p>A live garden. Hover over a particle to reveal an echo</p>
-        <p class="visitors-mobile-note">Commenting is only available on desktop.</p>
+        <p class="visitors-mobile-note">Tap “Comment” below to leave an echo.</p>
     </header>
 
     <ol id="visitor-feed" class="visitor-feed visitor-feed-floating"></ol>
@@ -10,6 +10,7 @@
     <section class="visitors-panel" aria-labelledby="visitors-title">
         <div class="visitors-head">
             <h3 id="visitors-title">Leave an Echo</h3>
+            <button class="visitor-panel-toggle" id="visitor-panel-toggle" type="button" aria-expanded="false" aria-controls="visitor-form">Comment</button>
         </div>
         <form id="visitor-form" class="visitor-form" autocomplete="off">
             <label class="visitor-field">
