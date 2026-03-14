@@ -51,7 +51,7 @@ window.MIXES_DATA = [
         dateIso: "2025-02-23",
         dateLabel: "23/02/2025",
         length: "56:44",
-        link: "https://www.youtube.com/watch?v=LcIdAD1qIz0&t=1850s",
+        link: "https://youtu.be/LcIdAD1qIz0?si=uOTaJdJ2CzMMi-3p",
         linkLabel: "YouTube",
         artworkRef: "assets/mixes/mix-08-canteen.jpg"
     },

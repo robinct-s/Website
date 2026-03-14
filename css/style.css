@@ -2927,6 +2927,22 @@ body.safari-perf .visitors-panel {
         pointer-events: auto;
     }
 
+    .visitors-panel .visitor-field input,
+    .visitors-panel .visitor-field textarea {
+        font-size: 0.62rem;
+        line-height: 1.2;
+        padding: 6px 6px;
+    }
+
+    .visitors-panel .visitor-field textarea {
+        min-height: 68px;
+    }
+
+    .visitors-panel {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+    }
+
     .visitors-panel .visitor-note {
         min-height: 0;
     }
