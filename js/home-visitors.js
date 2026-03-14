@@ -176,7 +176,7 @@
         const panel = document.querySelector(".visitors-panel");
         if (window.innerWidth > 768) {
             selectors.push(".visitors-panel");
-        } else if (panel && panel.classList.contains("is-expanded")) {
+        } else if (panel && panel.hasAttribute("open")) {
             selectors.push(".visitors-panel");
         }
         const pad = window.innerWidth <= 768 ? ORBIT_AVOID_PADDING + 10 : ORBIT_AVOID_PADDING;
@@ -214,7 +214,7 @@
             }
 
             const panel = document.querySelector(".visitors-panel");
-            if (panel && panel.classList.contains("is-expanded")) {
+            if (panel && panel.hasAttribute("open")) {
                 const rect = panel.getBoundingClientRect();
                 if (rect && rect.height > 0) {
                     const pad = ORBIT_AVOID_PADDING + 12;
@@ -650,7 +650,6 @@
         });
 
         const form = panel.querySelector("#visitor-form");
-        const toggleBtn = panel.querySelector("#visitor-panel-toggle");
         const nameInput = panel.querySelector("#visitor-name");
         const messageInput = panel.querySelector("#visitor-message");
         const noteEl = panel.querySelector("#visitor-note");
@@ -669,22 +668,10 @@
             setNote(noteEl, "Username locked.");
         }
 
-        if (toggleBtn) {
-            const updateToggle = () => {
-                const expanded = panel.classList.contains("is-expanded");
-                toggleBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
-                toggleBtn.textContent = expanded ? "Close" : "Comment";
-            };
-            if (isMobileViewport()) {
-                panel.classList.remove("is-expanded");
-                updateToggle();
-                toggleBtn.addEventListener("click", () => {
-                    panel.classList.toggle("is-expanded");
-                    updateToggle();
-                });
-            } else {
-                updateToggle();
-            }
+        if (isMobileViewport()) {
+            panel.removeAttribute("open");
+        } else {
+            panel.setAttribute("open", "");
         }
 
         const loadFeed = async () => {

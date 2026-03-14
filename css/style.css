@@ -636,20 +636,6 @@ main#content.hide-home-tagline .hero p {
     margin-bottom: 5px;
 }
 
-.visitor-panel-toggle {
-    display: none;
-    margin-left: auto;
-    border: 1px solid rgba(17, 17, 17, 0.18);
-    background: rgba(255, 255, 255, 0.5);
-    color: rgba(17, 17, 17, 0.78);
-    font: inherit;
-    font-size: 0.56rem;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    padding: 4px 7px;
-    cursor: pointer;
-}
-
 .visitors-head h3 {
     margin: 0;
     font-size: 0.61rem;
@@ -668,6 +654,16 @@ main#content.hide-home-tagline .hero p {
 .visitor-form {
     display: grid;
     gap: 4px;
+}
+
+.visitors-panel summary {
+    list-style: none;
+    cursor: default;
+    pointer-events: none;
+}
+
+.visitors-panel summary::-webkit-details-marker {
+    display: none;
 }
 
 .visitor-field {
@@ -2814,10 +2810,9 @@ body.safari-perf .visitors-panel {
         display: block;
         position: fixed;
         left: 50%;
-        bottom: 16px;
+        bottom: 86px;
         transform: translateX(-50%);
         width: min(94vw, 420px);
-        max-height: 56px;
         padding: 8px 10px 10px;
         border-radius: 14px;
         pointer-events: auto;
@@ -2827,7 +2822,11 @@ body.safari-perf .visitors-panel {
         transition: max-height 0.38s ease, box-shadow 0.3s ease, border-color 0.2s ease;
     }
 
-    .visitors-panel.is-expanded {
+    .visitors-panel:not([open]) {
+        max-height: 56px;
+    }
+
+    .visitors-panel[open] {
         max-height: 70vh;
         box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
         border-color: rgba(126, 174, 124, 0.5);
@@ -2850,12 +2849,28 @@ body.safari-perf .visitors-panel {
         bottom: auto;
     }
 
-    .visitor-panel-toggle {
-        display: inline-flex;
+    .visitors-panel summary {
+        display: flex;
         align-items: center;
-        justify-content: center;
-        padding: 5px 10px;
-        font-size: 0.6rem;
+        justify-content: space-between;
+        gap: 10px;
+        cursor: pointer;
+        pointer-events: auto;
+    }
+
+    .visitors-panel summary::after {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-right: 1px solid rgba(17, 17, 17, 0.7);
+        border-bottom: 1px solid rgba(17, 17, 17, 0.7);
+        transform: rotate(-45deg);
+        transition: transform 0.25s ease;
+        margin-right: 4px;
+    }
+
+    .visitors-panel[open] summary::after {
+        transform: rotate(135deg);
     }
 
     .visitors-panel .visitor-form {
@@ -2865,7 +2880,7 @@ body.safari-perf .visitors-panel {
         transition: max-height 0.35s ease, opacity 0.25s ease;
     }
 
-    .visitors-panel.is-expanded .visitor-form {
+    .visitors-panel[open] .visitor-form {
         max-height: 360px;
         opacity: 1;
         pointer-events: auto;

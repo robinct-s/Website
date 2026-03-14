@@ -202,6 +202,12 @@
 
     function getSoundType(target) {
         if (!target) return null;
+        const visitorsSummary = target.closest(".visitors-panel summary");
+        if (visitorsSummary) {
+            const panel = visitorsSummary.closest(".visitors-panel");
+            if (panel && panel.hasAttribute("open")) return null;
+            return "menu";
+        }
         if (target.closest("#intro-logo-trigger")) return "logo";
         if (target.closest("#play-pause")) {
             const playPauseBtn = document.getElementById("play-pause");
