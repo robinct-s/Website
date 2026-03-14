@@ -99,6 +99,16 @@
     const SUPPORTS_POINTER = "PointerEvent" in window;
     const mobileSoundPool = {};
     const mobileSoundIndex = {};
+    const primedSounds = new Set();
+    const CRITICAL_SOUNDS = new Set([
+        "logo",
+        "logoRepulse",
+        "menu",
+        "navClick",
+        "player",
+        "playerPlay",
+        "playerPause"
+    ]);
 
     Object.keys(UI_SOUND_SOURCES).forEach((key) => {
         const audio = new Audio();
@@ -140,16 +150,16 @@
         if (unlocked) return;
         unlocked = true;
         // Some browsers need an interaction before short SFX can play reliably.
-        Object.values(baseSounds).forEach((audio) => {
-            primeAudio(audio);
+        Object.keys(baseSounds).forEach((key) => {
+            if (!CRITICAL_SOUNDS.has(key)) return;
+            const audio = baseSounds[key];
+            if (audio) primeAudio(audio);
+            primedSounds.add(key);
+            if (IS_MOBILE) {
+                const pool = mobileSoundPool[key];
+                if (pool && pool[0]) primeAudio(pool[0]);
+            }
         });
-        if (IS_MOBILE) {
-            Object.values(mobileSoundPool).forEach((pool) => {
-                pool.forEach((audio) => {
-                    primeAudio(audio);
-                });
-            });
-        }
     }
 
     function createSoundInstance(soundType) {
@@ -224,12 +234,20 @@
         return null;
     }
 
+    function maybePrimeSound(soundType, sound) {
+        if (!unlocked) return;
+        if (primedSounds.has(soundType)) return;
+        primedSounds.add(soundType);
+        if (sound) primeAudio(sound);
+    }
+
     function playUiClick(soundType) {
         if (mutedForVideoFocus) return;
         const clickSound = createSoundInstance(soundType);
         if (!clickSound) return;
 
         clickSound.volume = UI_SOUND_VOLUME[soundType] ?? 0.2;
+        maybePrimeSound(soundType, clickSound);
         resetMobileSound(clickSound);
         clickSound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
@@ -314,6 +332,7 @@
         }
         sound.playbackRate = rate;
         lastInPageHoverRate = rate;
+        maybePrimeSound("inPageHover", sound);
         resetMobileSound(sound);
         sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
@@ -329,6 +348,7 @@
         sound.volume = Math.max(0, Math.min(1, baseVolume * volumeScale));
         sound.playbackRate = randomBetween(IN_WORKS_CLICK_RATE_MIN, IN_WORKS_CLICK_RATE_MAX);
         applyTailFade(sound, IN_WORKS_CLICK_TAIL_FADE_MS);
+        maybePrimeSound("inWorksPageClick", sound);
         resetMobileSound(sound);
         sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
@@ -348,6 +368,7 @@
         if (!sound) return;
         sound.playbackRate = 0.76 + intensity * 0.4;
         sound.volume = (UI_SOUND_VOLUME.aboutBeacon ?? 0.17) * (0.42 + intensity * 0.55);
+        maybePrimeSound("aboutBeacon", sound);
         resetMobileSound(sound);
         sound.play().catch(() => {
             // Missing file or blocked autoplay should fail silently.
@@ -362,6 +383,7 @@
         sound.playbackRate = 0.58 + intensity * 0.25 + randomBetween(-0.03, 0.03);
         sound.volume = (UI_SOUND_VOLUME.visitorWhisper ?? 0.14) * (0.45 + intensity * 0.42);
         applyTailFade(sound, 140);
+        maybePrimeSound("visitorWhisper", sound);
         resetMobileSound(sound);
         sound.play().catch(() => {
             // Missing file or blocked autoplay should fail silently.
@@ -380,6 +402,7 @@
             : (UI_SOUND_VOLUME.visitorFormationOut ?? 0.16);
         sound.volume = baseVolume * (active ? 0.9 : 0.78);
         applyTailFade(sound, 180);
+        maybePrimeSound(soundType, sound);
         resetMobileSound(sound);
         sound.play().catch(() => {
             // Missing file or blocked autoplay should fail silently.
@@ -400,6 +423,7 @@
             const volume = (UI_SOUND_VOLUME.particle ?? 0.12) * (0.65 + intensity * 0.55);
             particleSound.playbackRate = rate;
             particleSound.volume = volume;
+            maybePrimeSound("particle", particleSound);
             resetMobileSound(particleSound);
             particleSound.play().catch(() => {
                 // Missing file or blocked autoplay should fail silently.
@@ -512,6 +536,7 @@
         const delta = Math.min(1, Math.abs(event.deltaY || 0) / 140);
         sound.playbackRate = 0.92 + delta * 0.24 + randomBetween(-0.03, 0.03);
         sound.volume = (UI_SOUND_VOLUME.scrollWheel ?? 0.11) * (0.72 + delta * 0.5);
+        maybePrimeSound("scrollWheel", sound);
         resetMobileSound(sound);
         sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
