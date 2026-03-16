@@ -2838,8 +2838,9 @@ body.safari-perf .visitors-panel {
     }
 
     .visitors-panel:not([open]) {
-        max-height: 56px;
+        max-height: 68px;
         display: flex;
+        padding: 6px 10px;
     }
 
     .visitors-panel[open] {
@@ -2878,6 +2879,12 @@ body.safari-perf .visitors-panel {
         width: 100%;
         height: 100%;
         box-sizing: border-box;
+    }
+
+    .visitors-panel:not([open]) summary {
+        min-height: 44px;
+        padding-top: 6px;
+        padding-bottom: 6px;
     }
 
     .visitors-panel summary::after {
