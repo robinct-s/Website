@@ -2834,9 +2834,9 @@ body.safari-perf .visitors-panel {
         z-index: 9;
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
         overflow: hidden;
-        transition: max-height 1.25s cubic-bezier(0.4, 0, 0.2, 1),
-            box-shadow 0.7s ease,
-            border-color 0.6s ease;
+        transition: max-height 1.6s ease-in-out,
+            box-shadow 0.9s ease-in-out,
+            border-color 0.8s ease-in-out;
     }
 
     .visitors-panel:not([open]) {
@@ -2904,7 +2904,7 @@ body.safari-perf .visitors-panel {
         right: 10px;
         top: 50%;
         transform: translateY(-50%) rotate(-45deg);
-        transition: transform 0.55s ease;
+        transition: transform 0.8s ease-in-out;
     }
 
     .visitors-panel[open] summary::after {
@@ -2931,8 +2931,8 @@ body.safari-perf .visitors-panel {
         max-height: 0;
         opacity: 0;
         pointer-events: none;
-        transition: max-height 0.85s cubic-bezier(0.4, 0, 0.2, 1),
-            opacity 0.6s ease;
+        transition: max-height 1.6s ease-in-out,
+            opacity 0.9s ease-in-out;
     }
 
     .visitors-panel[open] .visitor-form {
