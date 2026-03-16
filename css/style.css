@@ -57,6 +57,7 @@ body.visitors-wash-active::before {
     filter: contrast(1.03) saturate(0.9);
 }
 
+
 /* =======================
    NAVIGATION
 ======================= */
@@ -378,6 +379,7 @@ main#content::-webkit-scrollbar-thumb:active {
 }
 
 body[data-page="works"] main#content,
+body[data-page="mixes"] main#content,
 body[data-page="live"] main#content {
     align-items: flex-start;
     padding-top: 96px;
