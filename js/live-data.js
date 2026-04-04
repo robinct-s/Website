@@ -1,12 +1,6 @@
 window.LIVE_EVENTS_DATA = {
     upcoming: [
         {
-            name: "Chrysalis",
-            city: "Exchange, Bristol UK",
-            dateIso: "2026-04-04",
-            dateLabel: "04/04/2026"
-        },
-        {
             name: "WE_WHO_BREAK",
             city: "Bush Hall, London UK",
             dateIso: "2026-04-24",
@@ -14,6 +8,12 @@ window.LIVE_EVENTS_DATA = {
         }
     ],
     archive: [
+        {
+            name: "Chrysalis",
+            city: "Exchange, Bristol UK",
+            dateIso: "2026-04-04",
+            dateLabel: "04/04/2026"
+        },
         {
             name: "KOMA-oto",
             city: "XLR, Manchester UK",
@@ -85,6 +85,12 @@ window.LIVE_EVENTS_DATA = {
             city: "Forestlimit, Tokyo JP",
             dateIso: "2024-11-27",
             dateLabel: "27/11/2024"
+        },
+        {
+            name: "Vice Versa",
+            city: "Forestlimit, Tokyo JP",
+            dateIso: "2024-10-15",
+            dateLabel: "15/10/2024"
         },
         {
             name: "Ethereal",
