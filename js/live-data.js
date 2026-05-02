@@ -1,13 +1,12 @@
 window.LIVE_EVENTS_DATA = {
-    upcoming: [
+    upcoming: [],
+    archive: [
         {
             name: "WE_WHO_BREAK",
             city: "Bush Hall, London UK",
             dateIso: "2026-04-24",
             dateLabel: "24/04/2026"
-        }
-    ],
-    archive: [
+        },
         {
             name: "Chrysalis",
             city: "Exchange, Bristol UK",

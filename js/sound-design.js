@@ -1,6 +1,7 @@
 (function () {
     const TOGGLE_MS = 620;
     const TOGGLE_EASE = "cubic-bezier(0.22, 0.64, 0.2, 1)";
+    const DIM_MS = 2450;
     let videoModeActive = false;
 
     function makeTag(tag, className, text) {
@@ -70,6 +71,8 @@
     function animateOpen(card, onDone) {
         if (card.dataset.animating === "true") return;
         card.dataset.animating = "true";
+        card.classList.remove("is-collapsing", "is-dimming");
+        card.classList.add("is-expanding");
 
         const start = card.offsetHeight;
         card.open = true;
@@ -85,12 +88,14 @@
         animation.onfinish = () => {
             card.style.height = "";
             card.style.overflow = "";
+            card.classList.remove("is-expanding");
             card.dataset.animating = "false";
             if (typeof onDone === "function") onDone();
         };
         animation.oncancel = () => {
             card.style.height = "";
             card.style.overflow = "";
+            card.classList.remove("is-expanding");
             card.dataset.animating = "false";
             if (typeof onDone === "function") onDone();
         };
@@ -99,6 +104,8 @@
     function animateClose(card, onDone) {
         if (card.dataset.animating === "true") return;
         card.dataset.animating = "true";
+        card.classList.remove("is-expanding");
+        card.classList.add("is-collapsing");
 
         const summary = card.querySelector("summary");
         const start = card.offsetHeight;
@@ -115,12 +122,18 @@
             card.open = false;
             card.style.height = "";
             card.style.overflow = "";
+            card.classList.remove("is-collapsing");
+            card.classList.add("is-dimming");
+            window.setTimeout(() => {
+                card.classList.remove("is-dimming");
+            }, DIM_MS);
             card.dataset.animating = "false";
             if (typeof onDone === "function") onDone();
         };
         animation.oncancel = () => {
             card.style.height = "";
             card.style.overflow = "";
+            card.classList.remove("is-collapsing", "is-dimming");
             card.dataset.animating = "false";
             if (typeof onDone === "function") onDone();
         };

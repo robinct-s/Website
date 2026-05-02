@@ -1,6 +1,7 @@
 (function () {
     const CARD_TOGGLE_MS = 1080;
     const CARD_TOGGLE_EASING = "cubic-bezier(0.65, 0, 0.35, 1)";
+    const CARD_DIM_MS = 2450;
     const PANEL_FADE_IN_MS = 380;
     const PANEL_FADE_OUT_MS = 260;
 
@@ -95,7 +96,7 @@
     function animateOpen(card) {
         if (card.dataset.animating === "true") return;
         card.dataset.animating = "true";
-        card.classList.remove("is-collapsing");
+        card.classList.remove("is-collapsing", "is-dimming");
         card.classList.add("is-expanding");
 
         const summary = card.querySelector("summary");
@@ -153,6 +154,10 @@
         if (!summary) {
             card.open = false;
             card.classList.remove("is-collapsing");
+            card.classList.add("is-dimming");
+            window.setTimeout(() => {
+                card.classList.remove("is-dimming");
+            }, CARD_DIM_MS);
             card.dataset.animating = "false";
             return;
         }
@@ -173,6 +178,10 @@
                 card.style.height = "";
                 card.style.overflow = "";
                 card.classList.remove("is-collapsing");
+                card.classList.add("is-dimming");
+                window.setTimeout(() => {
+                    card.classList.remove("is-dimming");
+                }, CARD_DIM_MS);
                 card.dataset.animating = "false";
             };
 
@@ -180,6 +189,7 @@
                 card.style.height = "";
                 card.style.overflow = "";
                 card.classList.remove("is-collapsing");
+                card.classList.remove("is-dimming");
                 card.dataset.animating = "false";
             };
         };

@@ -8,6 +8,8 @@
     <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
     <link rel="preload" href="assets/ui/logo-click.mp3" as="audio" type="audio/mpeg">
     <link rel="preload" href="assets/ui/logo-repulse.mp3" as="audio" type="audio/mpeg">
+    <link rel="preload" href="assets/ui/dark-mode-on.mp3" as="audio" type="audio/mpeg">
+    <link rel="preload" href="assets/ui/light-mode-on.mp3" as="audio" type="audio/mpeg">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="pre-intro">
@@ -21,14 +23,23 @@
             <li><a href="live.html" data-link="live">Live</a></li>
             <li><a href="mixes.html" data-link="mixes">Radio</a></li>
             <li><a href="sound-design.html" data-link="sound-design">Sound Design</a></li>
+            <li><a href="installation.html" data-link="installation">Installation</a></li>
             <li><a href="about.html" data-link="about">About</a></li>
             <li><a href="visitors.html" data-link="visitors">Visitors</a></li>
         </ul>
     </nav>
+    <button class="dark-mode-toggle" id="dark-mode-toggle" type="button" aria-pressed="false" aria-label="Switch to echo mapping">
+        <span class="dark-mode-toggle-orb" aria-hidden="true">
+            <span class="dark-mode-toggle-glyph"></span>
+        </span>
+        <span class="dark-mode-toggle-label">active sight</span>
+    </button>
 
     <!-- Background Layers -->
     <div class="texture-bg" aria-hidden="true"></div>
     <div id="particles-js" aria-hidden="true"></div>
+    <div id="darkness-field" aria-hidden="true"></div>
+    <div id="aura-field" aria-hidden="true"></div>
     <button id="intro-logo-trigger" aria-label="Start audio and intro animation"></button>
     <p id="intro-open-note">audio up, explore deliberately</p>
 
@@ -69,10 +80,12 @@
     <script src="js/live.js"></script>
     <script src="js/sound-design-data.js"></script>
     <script src="js/sound-design.js"></script>
+    <script src="js/installation.js"></script>
     <script src="js/about-data.js"></script>
     <script src="js/about.js"></script>
     <script src="js/player.js"></script>
     <script src="js/ui-sounds.js"></script>
+    <script src="js/dark-mode.js"></script>
 
 
 

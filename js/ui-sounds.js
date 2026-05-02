@@ -28,7 +28,11 @@
         pageWorks: "assets/ui/page-works-load.mp3",
         pageLive: "assets/ui/page-live-load.mp3",
         pageSoundDesign: "assets/ui/page-sound-design-load.mp3",
-        pageAbout: "assets/ui/page-about-load.mp3"
+        pageAbout: "assets/ui/page-about-load.mp3",
+        pageInstallation: "assets/ui/installation-load.mp3",
+        installationPanel: "assets/ui/installation-load.mp3",
+        darkModeOn: "assets/ui/dark-mode-on.mp3",
+        lightModeOn: "assets/ui/light-mode-on.mp3"
     };
     const UI_SOUND_VOLUME = {
         menu: 0.2,
@@ -54,10 +58,16 @@
         pageWorks: 0.18,
         pageLive: 0.18,
         pageSoundDesign: 0.18,
-        pageAbout: 0.18
+        pageAbout: 0.18,
+        pageInstallation: 0.18,
+        installationPanel: 0.16,
+        darkModeOn: 0.2,
+        lightModeOn: 0.18
     };
     const PARTICLE_QUEUE_LIMIT = 12;
     const PARTICLE_QUEUE_GAP_MS = IS_SAFARI ? 90 : 55;
+    const PARTICLE_AUDIO_MIN_GAP_MS = IS_SAFARI ? 120 : 75;
+    const VISITOR_WHISPER_AUDIO_GAP_MS = 90;
     const HOME_PRELOAD_DELAY_MS = 200;
     const IN_PAGE_HOVER_GAP_MS = 95;
     const IN_PAGE_HOVER_RATE_MIN = 0.86;
@@ -75,6 +85,11 @@
 
     let unlocked = false;
     let mutedForVideoFocus = false;
+    let lastSoundPointer = {
+        x: window.innerWidth * 0.5,
+        y: window.innerHeight * 0.5,
+        at: 0
+    };
     const baseSounds = {};
     const particleQueue = [];
     let particleQueueTimer = null;
@@ -84,6 +99,7 @@
         mixes: "pageWorks",
         live: "pageLive",
         "sound-design": "pageSoundDesign",
+        installation: "pageInstallation",
         about: "pageAbout",
         visitors: "pageAbout"
     };
@@ -91,6 +107,8 @@
     let lastInPageHoverRate = null;
     let lastIntroLogoSoundAt = 0;
     let lastHomeSoundAt = 0;
+    let lastParticleAudioQueuedAt = 0;
+    let lastVisitorWhisperSoundAt = 0;
     let introSoundLockUntil = 0;
     let lastIntroTouchAt = 0;
     let lastTouchLikeAt = 0;
@@ -262,7 +280,79 @@
         if (sound) primeAudio(sound);
     }
 
-    function playUiClick(soundType) {
+    function rememberSoundPoint(event) {
+        if (!event) return;
+        const source = event.touches && event.touches[0] ? event.touches[0] : event;
+        if (!Number.isFinite(source.clientX) || !Number.isFinite(source.clientY)) return;
+        lastSoundPointer = {
+            x: source.clientX,
+            y: source.clientY,
+            at: performance.now()
+        };
+    }
+
+    function getSoundAuraPoint(options = {}) {
+        if (Number.isFinite(options.x) && Number.isFinite(options.y)) {
+            return { x: options.x, y: options.y };
+        }
+        const now = performance.now();
+        if (lastSoundPointer && now - lastSoundPointer.at < 3500) {
+            return { x: lastSoundPointer.x, y: lastSoundPointer.y };
+        }
+        return {
+            x: window.innerWidth * 0.5,
+            y: window.innerHeight * 0.5
+        };
+    }
+
+    function dispatchSoundAura(soundType, options = {}) {
+        if (mutedForVideoFocus || options.skipAura) return;
+        const point = getSoundAuraPoint(options);
+        window.dispatchEvent(new CustomEvent("uisoundaura", {
+            detail: {
+                soundType,
+                source: options.source || "ui",
+                x: point.x,
+                y: point.y,
+                intensity: options.intensity,
+                radius: options.radius,
+                color: options.color,
+                shape: options.shape,
+                lineHeight: options.lineHeight
+            }
+        }));
+    }
+
+    function isPlayerSound(soundType) {
+        return soundType === "player" || soundType === "playerPlay" || soundType === "playerPause";
+    }
+
+    function getPlayerAuraOptions() {
+        const player = document.querySelector(".player");
+        if (!player) return null;
+        const rect = player.getBoundingClientRect();
+        if (!rect || rect.width <= 0 || rect.height <= 0) return null;
+        return {
+            x: rect.left + rect.width * 0.5,
+            y: rect.top + rect.height * 0.5,
+            source: "player",
+            intensity: 0.58,
+            radius: Math.max(180, Math.min(360, rect.width * 0.74))
+        };
+    }
+
+    function pulsePlayerLight() {
+        const player = document.querySelector(".player");
+        if (!player) return;
+        player.classList.remove("is-light-pulsing");
+        void player.offsetWidth;
+        player.classList.add("is-light-pulsing");
+        window.setTimeout(() => {
+            player.classList.remove("is-light-pulsing");
+        }, 980);
+    }
+
+    function playUiClick(soundType, options = {}) {
         if (mutedForVideoFocus) return;
         const clickSound = createSoundInstance(soundType);
         if (!clickSound) return;
@@ -270,6 +360,16 @@
         clickSound.volume = UI_SOUND_VOLUME[soundType] ?? 0.2;
         maybePrimeSound(soundType, clickSound);
         resetMobileSound(clickSound);
+        if (isPlayerSound(soundType)) {
+            pulsePlayerLight();
+            const playerAuraOptions = getPlayerAuraOptions() || {};
+            dispatchSoundAura(soundType, {
+                ...options,
+                ...playerAuraOptions
+            });
+        } else {
+            dispatchSoundAura(soundType, options);
+        }
         clickSound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });
@@ -355,6 +455,11 @@
         lastInPageHoverRate = rate;
         maybePrimeSound("inPageHover", sound);
         resetMobileSound(sound);
+        dispatchSoundAura("inPageHover", {
+            source: "hover",
+            intensity: 0.78,
+            radius: 330
+        });
         sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });
@@ -371,6 +476,11 @@
         applyTailFade(sound, IN_WORKS_CLICK_TAIL_FADE_MS);
         maybePrimeSound("inWorksPageClick", sound);
         resetMobileSound(sound);
+        dispatchSoundAura("inWorksPageClick", {
+            source: "click",
+            intensity: 0.76,
+            radius: 270
+        });
         sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });
@@ -379,7 +489,13 @@
     function playPageSound(page) {
         const soundType = PAGE_SOUND_BY_KEY[page];
         if (!soundType) return;
-        playUiClick(soundType);
+        playUiClick(soundType, {
+            source: "page",
+            x: window.innerWidth * 0.5,
+            y: window.innerHeight * 0.46,
+            intensity: 1,
+            radius: 460
+        });
     }
 
     function playAboutBeacon(detail) {
@@ -391,6 +507,14 @@
         sound.volume = (UI_SOUND_VOLUME.aboutBeacon ?? 0.17) * (0.42 + intensity * 0.55);
         maybePrimeSound("aboutBeacon", sound);
         resetMobileSound(sound);
+        dispatchSoundAura("aboutBeacon", {
+            source: "proximity",
+            x: detail && detail.x,
+            y: detail && detail.y,
+            color: detail && detail.color,
+            intensity: 0.5 + intensity * 0.35,
+            radius: 260 + intensity * 120
+        });
         sound.play().catch(() => {
             // Missing file or blocked autoplay should fail silently.
         });
@@ -399,6 +523,17 @@
     function playVisitorWhisper(detail) {
         if (!unlocked || mutedForVideoFocus) return;
         const intensity = Math.max(0, Math.min(1, detail && detail.intensity != null ? detail.intensity : 0.7));
+        dispatchSoundAura("visitorWhisper", {
+            source: "particle",
+            x: detail && detail.x,
+            y: detail && detail.y,
+            color: detail && detail.color,
+            intensity: 0.45 + intensity * 0.28,
+            radius: 210 + intensity * 80
+        });
+        const now = performance.now();
+        if (now - lastVisitorWhisperSoundAt < VISITOR_WHISPER_AUDIO_GAP_MS) return;
+        lastVisitorWhisperSoundAt = now;
         const sound = createSoundInstance("visitorWhisper");
         if (!sound) return;
         sound.playbackRate = 0.58 + intensity * 0.25 + randomBetween(-0.03, 0.03);
@@ -425,6 +560,13 @@
         applyTailFade(sound, 180);
         maybePrimeSound(soundType, sound);
         resetMobileSound(sound);
+        dispatchSoundAura(soundType, {
+            source: "formation",
+            x: window.innerWidth * 0.5,
+            y: window.innerHeight * 0.58,
+            intensity: active ? 0.9 : 0.65,
+            radius: active ? 520 : 380
+        });
         sound.play().catch(() => {
             // Missing file or blocked autoplay should fail silently.
         });
@@ -457,6 +599,15 @@
     function enqueueParticleSound(eventData) {
         if (mutedForVideoFocus) return;
         if (!unlocked) return;
+        const intensity = Math.max(0, Math.min(1, eventData && eventData.intensity != null ? eventData.intensity : 0.5));
+        dispatchSoundAura("particle", {
+            source: "particle",
+            intensity: 0.42 + intensity * 0.34,
+            radius: 190 + intensity * 120
+        });
+        const now = performance.now();
+        if (now - lastParticleAudioQueuedAt < PARTICLE_AUDIO_MIN_GAP_MS) return;
+        lastParticleAudioQueuedAt = now;
         if (particleQueue.length >= PARTICLE_QUEUE_LIMIT) return;
         particleQueue.push(eventData || {});
         if (particleQueueTimer === null) {
@@ -470,6 +621,7 @@
     window.addEventListener("DOMContentLoaded", preloadCriticalSoundFiles, { once: true });
 
     function handleUiClickEvent(event) {
+        rememberSoundPoint(event);
         if (lastIntroTouchAt && performance.now() - lastIntroTouchAt < 700) return;
         const navSoundType = getNavSoundType(event.target);
         if (navSoundType) {
@@ -495,6 +647,7 @@
     }
 
     document.addEventListener("click", (event) => {
+        rememberSoundPoint(event);
         if (lastTouchLikeAt && performance.now() - lastTouchLikeAt < 700) return;
         unlockAudio();
         handleUiClickEvent(event);
@@ -502,6 +655,7 @@
 
     if (SUPPORTS_POINTER) {
         document.addEventListener("pointerdown", (event) => {
+            rememberSoundPoint(event);
             if (event.pointerType && event.pointerType !== "mouse") {
                 lastTouchLikeAt = performance.now();
                 unlockAudio();
@@ -510,6 +664,7 @@
         }, { passive: true });
     } else {
         document.addEventListener("touchstart", (event) => {
+            rememberSoundPoint(event);
             lastTouchLikeAt = performance.now();
             unlockAudio();
             handleUiClickEvent(event);
@@ -522,6 +677,7 @@
         if (!target.closest("#intro-logo-trigger")) return;
         lastIntroTouchAt = performance.now();
         lastTouchLikeAt = lastIntroTouchAt;
+        rememberSoundPoint(event);
         unlockAudio();
         lockIntroSounds();
         if (shouldSkipIntroLogoSound()) return;
@@ -530,6 +686,7 @@
 
     document.addEventListener("pointerover", (event) => {
         if (event.pointerType && event.pointerType !== "mouse") return;
+        rememberSoundPoint(event);
         const hoverTarget = getHoverSoundTarget(event.target);
         if (!hoverTarget) return;
         const hoverNode = hoverTarget.node;
@@ -543,11 +700,29 @@
             playInPageHoverSound();
             return;
         }
-        playUiClick(hoverTarget.soundType);
+        const skipAura = hoverTarget.soundType === "streamLinkHover";
+        playUiClick(hoverTarget.soundType, {
+            source: "hover",
+            intensity: 0.78,
+            radius: 330,
+            skipAura
+        });
     });
 
     window.addEventListener("particleinterference", (event) => {
         enqueueParticleSound(event && event.detail ? event.detail : {});
+    });
+
+    window.addEventListener("darkmodesound", (event) => {
+        const detail = event && event.detail ? event.detail : {};
+        const soundType = detail.enabled ? "darkModeOn" : "lightModeOn";
+        unlockAudio();
+        playUiClick(soundType, {
+            source: "toggle",
+            intensity: detail.enabled ? 0.9 : 0.58,
+            radius: detail.enabled ? 420 : 300,
+            color: detail.enabled ? "126, 174, 124" : "232, 244, 226"
+        });
     });
 
     window.addEventListener("wheel", (event) => {
@@ -556,10 +731,26 @@
         const sound = createSoundInstance("scrollWheel");
         if (!sound) return;
         const delta = Math.min(1, Math.abs(event.deltaY || 0) / 140);
+        const scroller = document.getElementById("content");
+        const rect = scroller ? scroller.getBoundingClientRect() : null;
+        const scrollable = scroller ? Math.max(0, scroller.scrollHeight - scroller.clientHeight) : 0;
+        const progress = scrollable > 0 ? scroller.scrollTop / scrollable : 0.5;
+        const x = rect ? rect.right - 14 : window.innerWidth - 14;
+        const y = rect ? rect.top + rect.height * (0.18 + progress * 0.64) : window.innerHeight * 0.5;
+        const lineHeight = rect ? Math.min(rect.height * 0.86, window.innerHeight - 56) : window.innerHeight * 0.78;
         sound.playbackRate = 0.92 + delta * 0.24 + randomBetween(-0.03, 0.03);
         sound.volume = (UI_SOUND_VOLUME.scrollWheel ?? 0.11) * (0.72 + delta * 0.5);
         maybePrimeSound("scrollWheel", sound);
         resetMobileSound(sound);
+        dispatchSoundAura("scrollWheel", {
+            source: "scroll",
+            shape: "scrollbar",
+            x,
+            y,
+            intensity: 0.34 + delta * 0.3,
+            radius: 180 + delta * 90,
+            lineHeight
+        });
         sound.play().catch(() => {
             // Ignore if file is missing or browser blocks.
         });

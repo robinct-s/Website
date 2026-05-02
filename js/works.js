@@ -1,6 +1,7 @@
 (function () {
     const CARD_TOGGLE_MS = 1080;
     const CARD_TOGGLE_EASING = "cubic-bezier(0.65, 0, 0.35, 1)";
+    const CARD_DIM_MS = 2450;
     const PANEL_FADE_IN_MS = 380;
     const PANEL_FADE_OUT_MS = 260;
     const DEFAULT_WORKS_TAB = "canon";
@@ -120,6 +121,9 @@
         "isos-five-seasons-winter": {
             soundcloud: "https://soundcloud.com/mizuha-cc/sets/isos-five-seasons?si=a0b799417ba241df8614018121999432&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
             bandcamp: "https://mizuhamizuha.bandcamp.com/album/isos-five-seasons-3"
+        },
+        "end-sky-atlas": {
+            pending: ["soundcloud", "bandcamp", "spotify", "apple"]
         }
     };
 
@@ -133,13 +137,24 @@
     function makeReleaseStreamLinks(release) {
         const cfg = RELEASE_STREAMING_OPTIONS[release.id] || {};
         const platformOrder = ["soundcloud", "bandcamp", "spotify", "apple"];
-        return platformOrder
+        const links = platformOrder
             .filter((platform) => typeof cfg[platform] === "string" && cfg[platform].trim() && STREAM_PLATFORM_LABELS[platform])
             .map((platform) => ({
                 id: platform,
                 label: STREAM_PLATFORM_LABELS[platform],
                 href: cfg[platform].trim()
             }));
+        const pending = Array.isArray(cfg.pending) ? cfg.pending : [];
+        pending.forEach((platform) => {
+            if (!STREAM_PLATFORM_LABELS[platform]) return;
+            if (links.some((link) => link.id === platform)) return;
+            links.push({
+                id: platform,
+                label: STREAM_PLATFORM_LABELS[platform],
+                disabled: true
+            });
+        });
+        return links;
     }
 
     function formatTrackCount(trackCount) {
@@ -254,13 +269,18 @@
             const streamTitle = makeTag("h4", "release-stream-title", "Listen");
             const streamList = makeTag("div", "release-stream-links");
             streamLinks.forEach((stream) => {
-                const link = makeTag("a", "release-stream-link", stream.label);
-                link.href = stream.href;
-                link.target = "_blank";
-                link.rel = "noopener noreferrer";
+                const link = makeTag(stream.disabled ? "span" : "a", "release-stream-link", stream.label);
+                if (stream.disabled) {
+                    link.classList.add("is-disabled");
+                    link.setAttribute("aria-disabled", "true");
+                } else {
+                    link.href = stream.href;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    link.dataset.uiSound = "streamLink";
+                    link.dataset.uiHoverSound = "streamLinkHover";
+                }
                 link.dataset.platform = stream.id;
-                link.dataset.uiSound = "streamLink";
-                link.dataset.uiHoverSound = "streamLinkHover";
                 streamList.appendChild(link);
             });
             copy.appendChild(streamTitle);
@@ -311,7 +331,7 @@
     function animateOpen(card) {
         if (card.dataset.animating === "true") return;
         card.dataset.animating = "true";
-        card.classList.remove("is-collapsing");
+        card.classList.remove("is-collapsing", "is-dimming");
         card.classList.add("is-expanding");
 
         const summary = card.querySelector("summary");
@@ -369,6 +389,10 @@
         if (!summary) {
             card.open = false;
             card.classList.remove("is-collapsing");
+            card.classList.add("is-dimming");
+            window.setTimeout(() => {
+                card.classList.remove("is-dimming");
+            }, CARD_DIM_MS);
             card.dataset.animating = "false";
             return;
         }
@@ -390,6 +414,10 @@
                 card.style.height = "";
                 card.style.overflow = "";
                 card.classList.remove("is-collapsing");
+                card.classList.add("is-dimming");
+                window.setTimeout(() => {
+                    card.classList.remove("is-dimming");
+                }, CARD_DIM_MS);
                 card.dataset.animating = "false";
             };
 
@@ -397,6 +425,7 @@
                 card.style.height = "";
                 card.style.overflow = "";
                 card.classList.remove("is-collapsing");
+                card.classList.remove("is-dimming");
                 card.dataset.animating = "false";
             };
         };

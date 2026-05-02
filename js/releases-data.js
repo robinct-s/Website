@@ -389,6 +389,23 @@ window.RELEASES_DATA = [
         ]
     },
     {
+        id: "end-sky-atlas",
+        catalog: "fragments",
+        number: "17",
+        title: "End Sky Atlas",
+        year: "2026",
+        format: "Album",
+        label: "Orange Milk Records",
+        trackCount: 1,
+        artworkRef: "assets/releases/brelease-17-end-sky-atlas.jpg",
+        artworkCredit: "c0r1el",
+        mixCredit: "Robin Tetlow-Shooter, Chuyi Wang",
+        masterCredit: "Estle",
+        tracks: [
+            { title: "End Sky Atlas", duration: "" }
+        ]
+    },
+    {
         id: "remember",
         catalog: "fragments",
         number: "10",
@@ -407,4 +424,3 @@ window.RELEASES_DATA = [
         ]
     }
 ];
-

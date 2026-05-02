@@ -17,7 +17,7 @@
     const logoRepulseTarget = document.getElementById("home-logo-interact") || brandLogo;
     const particles = [];
     const particleCount = IS_SAFARI ? 46 : 90;
-    const INTERFERENCE_MIN_INTERVAL_MS = IS_SAFARI ? 120 : 75;
+    const INTERFERENCE_MIN_INTERVAL_MS = IS_SAFARI ? 76 : 32;
     const POINTER_MOVEMENT_ACTIVE_WINDOW_MS = 120;
     const POINTER_MOVE_EPSILON_PX = 0.2;
     const BEACON_PROXIMITY_MIN_INTERVAL_MS = 120;
@@ -250,7 +250,12 @@
             time - lastBeaconProximityAt > BEACON_PROXIMITY_MIN_INTERVAL_MS
         ) {
             window.dispatchEvent(new CustomEvent("aboutbeaconproximity", {
-                detail: { intensity: nearMix }
+                detail: {
+                    intensity: nearMix,
+                    x: beacon.x,
+                    y: beacon.y,
+                    color: `${NATURAL_YELLOW.r}, ${NATURAL_YELLOW.g}, ${NATURAL_YELLOW.b}`
+                }
             }));
             lastBeaconProximityAt = time;
         }
@@ -495,7 +500,7 @@
         pointerOverUi = !!(
             target &&
             target.closest &&
-            target.closest("nav a, summary, .release-panel, .live-item, .about-link, .visitors-panel, .mix-card, .mix-cover-link, .mix-title, .mix-open-link, button, input, textarea, .player, .mobile-menu-toggle, #intro-logo-trigger")
+            target.closest("nav a, summary, .release-panel, .live-item, .about-link, .visitors-panel, .mix-card, .mix-cover-link, .mix-title, .mix-open-link, .installation-ui, button, input, textarea, .player, .mobile-menu-toggle, #intro-logo-trigger")
         );
     });
 

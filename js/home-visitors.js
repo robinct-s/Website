@@ -172,6 +172,34 @@
         return `hsl(${hue} ${sat}% ${light}%)`;
     }
 
+    function hslToRgbComponents(hsl) {
+        const match = String(hsl || "").match(/hsl\(([\d.]+)\s+([\d.]+)%\s+([\d.]+)%\)/i);
+        if (!match) return "188, 226, 178";
+        const h = ((Number(match[1]) % 360) + 360) % 360;
+        const s = Math.max(0, Math.min(1, Number(match[2]) / 100));
+        const l = Math.max(0, Math.min(1, Number(match[3]) / 100));
+        const c = (1 - Math.abs(2 * l - 1)) * s;
+        const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        const m = l - c / 2;
+        let r = 0;
+        let g = 0;
+        let b = 0;
+        if (h < 60) {
+            r = c; g = x;
+        } else if (h < 120) {
+            r = x; g = c;
+        } else if (h < 180) {
+            g = c; b = x;
+        } else if (h < 240) {
+            g = x; b = c;
+        } else if (h < 300) {
+            r = x; b = c;
+        } else {
+            r = c; b = x;
+        }
+        return `${Math.round((r + m) * 255)}, ${Math.round((g + m) * 255)}, ${Math.round((b + m) * 255)}`;
+    }
+
     function getOrbitColor(entry) {
         const key = makeEntryKey(entry);
         if (!orbitColorByKey.has(key)) {
@@ -514,7 +542,9 @@
             dot.type = "button";
             dot.className = "visitor-orbit-dot";
             dot.setAttribute("aria-label", `${entry.username}: ${entry.message}`);
-            dot.style.setProperty("--orbit-color", getOrbitColor(entry));
+            const orbitColor = getOrbitColor(entry);
+            const auraColor = hslToRgbComponents(orbitColor);
+            dot.style.setProperty("--orbit-color", orbitColor);
 
             const tip = document.createElement("div");
             tip.className = "visitor-orbit-tip";
@@ -549,6 +579,7 @@
                 wobbleSpeed: 0.001 + Math.random() * 0.0012,
                 wobblePhase: Math.random() * Math.PI * 2,
                 wobbleSize: 2 + Math.random() * 4,
+                auraColor,
                 hovered: false,
                 scale: 1
             };
@@ -557,10 +588,16 @@
             node.addEventListener("mouseenter", () => {
                 const now = performance.now();
                 orbitNode.hovered = true;
-                if (now - lastHoverSoundAt < 90) return;
+                if (now - lastHoverSoundAt < 28) return;
                 lastHoverSoundAt = now;
+                const rect = dot.getBoundingClientRect();
                 window.dispatchEvent(new CustomEvent("visitorparticlehover", {
-                    detail: { intensity: 0.7 + Math.random() * 0.3 }
+                    detail: {
+                        intensity: 0.7 + Math.random() * 0.3,
+                        x: rect.left + rect.width * 0.5,
+                        y: rect.top + rect.height * 0.5,
+                        color: orbitNode.auraColor
+                    }
                 }));
             });
             node.addEventListener("mouseleave", () => {
