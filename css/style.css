@@ -3125,6 +3125,7 @@ body.pre-intro .player {
 @media (prefers-reduced-motion: reduce) {
     .installation-radar-sweep,
     .installation-radar-sweep::before,
+    .installation-radar-sweep::after,
     .installation-radar-blip,
     .installation-status-scan {
         animation: none;
@@ -4674,11 +4675,41 @@ body.safari-perf.dark-mode-desktop .visitors-panel {
 
     .installation-radar-sweep {
         animation: none;
+        background: none;
     }
 
     .installation-radar-sweep::before {
         animation: installationMobileRadarArm var(--installation-scan-duration) linear infinite;
         will-change: transform;
+    }
+
+    .installation-radar-sweep::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: conic-gradient(
+            from -28deg,
+            rgba(226, 255, 222, 0.84) 0deg,
+            rgba(154, 216, 151, 0.36) 13deg,
+            rgba(126, 174, 124, 0.14) 30deg,
+            rgba(126, 174, 124, 0) 58deg,
+            rgba(126, 174, 124, 0) 360deg
+        );
+        transform-origin: 50% 50%;
+        animation: installationMobileRadarArm var(--installation-scan-duration) linear infinite;
+        will-change: transform;
+    }
+
+    body.dark-mode-desktop[data-page="installation"] .installation-radar-sweep::after {
+        background: conic-gradient(
+            from -28deg,
+            rgba(242, 255, 238, 0.96) 0deg,
+            rgba(176, 239, 168, 0.5) 13deg,
+            rgba(126, 174, 124, 0.2) 31deg,
+            rgba(126, 174, 124, 0) 60deg,
+            rgba(126, 174, 124, 0) 360deg
+        );
     }
 
     #content .installation-status {
