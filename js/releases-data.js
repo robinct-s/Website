@@ -402,7 +402,7 @@ window.RELEASES_DATA = [
         mixCredit: "Robin Tetlow-Shooter, Chuyi Wang",
         masterCredit: "Estle",
         tracks: [
-            { title: "End Sky Atlas", duration: "" }
+            { title: "Our Final Shape", featuredArtists: "Parasol", duration: "03:54" }
         ]
     },
     {
