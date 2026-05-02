@@ -3071,6 +3071,15 @@ body.pre-intro .player {
     }
 }
 
+@keyframes installationMobileRadarArm {
+    from {
+        transform: rotate(-28deg);
+    }
+    to {
+        transform: rotate(332deg);
+    }
+}
+
 @keyframes installationTextReveal {
     0%,
     12% {
@@ -3115,6 +3124,7 @@ body.pre-intro .player {
 
 @media (prefers-reduced-motion: reduce) {
     .installation-radar-sweep,
+    .installation-radar-sweep::before,
     .installation-radar-blip,
     .installation-status-scan {
         animation: none;
@@ -4660,6 +4670,15 @@ body.safari-perf.dark-mode-desktop .visitors-panel {
         width: 100%;
         min-height: 342px;
         padding: 18px 12px 20px;
+    }
+
+    .installation-radar-sweep {
+        animation: none;
+    }
+
+    .installation-radar-sweep::before {
+        animation: installationMobileRadarArm var(--installation-scan-duration) linear infinite;
+        will-change: transform;
     }
 
     #content .installation-status {
