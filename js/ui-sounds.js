@@ -16,6 +16,7 @@
         scrollWheel: "assets/ui/scroll-wheel.mp3",
         logo: "assets/ui/logo-click.mp3",
         logoRepulse: "assets/ui/logo-repulse.mp3",
+        genericHover: "assets/ui/generic-hover.mp3",
         player: "assets/ui/player-click.mp3",
         playerPlay: "assets/ui/player-play.mp3",
         playerPause: "assets/ui/player-pause.mp3",
@@ -46,6 +47,7 @@
         scrollWheel: 0.11,
         logo: 0.24,
         logoRepulse: 0.2,
+        genericHover: 0.13,
         player: 0.2,
         playerPlay: 0.2,
         playerPause: 0.2,
@@ -73,6 +75,7 @@
     const IN_PAGE_HOVER_RATE_MIN = 0.86;
     const IN_PAGE_HOVER_RATE_MAX = 1.18;
     const IN_PAGE_HOVER_VOL_JITTER = 0.24;
+    const GENERIC_HOVER_GAP_MS = 80;
     const SEMITONE_RATIO = Math.pow(2, 1 / 12);
     const IN_WORKS_CLICK_RATE_MIN = 0.97;
     const IN_WORKS_CLICK_RATE_MAX = 1.04;
@@ -104,6 +107,7 @@
         visitors: "pageAbout"
     };
     let lastInPageHoverAt = 0;
+    let lastGenericHoverAt = 0;
     let lastInPageHoverRate = null;
     let lastIntroLogoSoundAt = 0;
     let lastHomeSoundAt = 0;
@@ -266,11 +270,21 @@
             }
         }
 
+        const genericHoverNode = getGenericHoverNode(target);
+        if (genericHoverNode) {
+            return { node: genericHoverNode, soundType: "genericHover" };
+        }
+
         const inPageNode = getInPageMenuNode(target);
         if (inPageNode) {
             return { node: inPageNode, soundType: "inPageHover" };
         }
         return null;
+    }
+
+    function getGenericHoverNode(target) {
+        if (!document.body.classList.contains("dark-mode-desktop")) return null;
+        return target.closest("nav a, .dark-mode-toggle, .player button, #home-logo-interact");
     }
 
     function maybePrimeSound(soundType, sound) {
@@ -694,13 +708,21 @@
         if (related && hoverNode.contains(related)) return;
 
         const now = performance.now();
-        if (now - lastInPageHoverAt < IN_PAGE_HOVER_GAP_MS) return;
-        lastInPageHoverAt = now;
         if (hoverTarget.soundType === "inPageHover") {
+            if (now - lastInPageHoverAt < IN_PAGE_HOVER_GAP_MS) return;
+            lastInPageHoverAt = now;
             playInPageHoverSound();
             return;
         }
-        const skipAura = hoverTarget.soundType === "streamLinkHover";
+        if (hoverTarget.soundType === "genericHover") {
+            if (!introReadyForGeneralSounds || isIntroSoundLocked()) return;
+            if (now - lastGenericHoverAt < GENERIC_HOVER_GAP_MS) return;
+            lastGenericHoverAt = now;
+        } else {
+            if (now - lastInPageHoverAt < IN_PAGE_HOVER_GAP_MS) return;
+            lastInPageHoverAt = now;
+        }
+        const skipAura = hoverTarget.soundType === "streamLinkHover" || hoverTarget.soundType === "genericHover";
         playUiClick(hoverTarget.soundType, {
             source: "hover",
             intensity: 0.78,

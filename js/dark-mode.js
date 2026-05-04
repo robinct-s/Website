@@ -1,8 +1,11 @@
 (function () {
     const DESKTOP_QUERY = "(min-width: 769px) and (hover: hover) and (pointer: fine)";
     const MAX_AURAS = 30;
+    // Reversible dark-mode torch experiment.
+    const TORCH_EXPERIMENT_ENABLED = true;
 
     const toggle = document.getElementById("dark-mode-toggle");
+    const torchField = document.getElementById("torch-field");
     const auraField = document.getElementById("aura-field");
     const body = document.body;
     const toggleLabel = toggle ? toggle.querySelector(".dark-mode-toggle-label") : null;
@@ -11,8 +14,21 @@
     let enabled = false;
     let toneTimer = null;
     let persistentRaf = 0;
-    let navLightRaf = 0;
-    let navLightStartedAt = 0;
+    let torchRaf = 0;
+    let lastTorchX = 0;
+    let lastTorchY = 0;
+    let torchVisible = false;
+    let torchActive = false;
+    let currentTorchX = 0;
+    let currentTorchY = 0;
+    let currentTorchAngle = 0;
+    let currentTorchOpacity = 0;
+    let currentTorchScale = 1;
+    let targetTorchX = 0;
+    let targetTorchY = 0;
+    let targetTorchAngle = 0;
+    let targetTorchOpacity = 0;
+    let targetTorchScale = 1;
     const persistentLights = new Map();
 
     if (!toggle || !auraField || !body) return;
@@ -25,6 +41,15 @@
 
     function clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    function lerp(start, end, amount) {
+        return start + (end - start) * amount;
+    }
+
+    function lerpAngle(start, end, amount) {
+        const diff = ((((end - start) % 360) + 540) % 360) - 180;
+        return start + diff * amount;
     }
 
     function syncModeState(options = {}) {
@@ -58,10 +83,10 @@
         }
         if (active) {
             startPersistentLights();
-            startNavLightFlow();
+            startTorchFlow();
         } else {
             stopPersistentLights();
-            stopNavLightFlow();
+            stopTorchFlow();
         }
     }
 
@@ -220,86 +245,103 @@
         persistentField.replaceChildren();
     }
 
-    function easeInOut(value) {
-        const t = clamp(value, 0, 1);
-        return t * t * (3 - 2 * t);
+    function startTorchFlow() {
+        if (!TORCH_EXPERIMENT_ENABLED || !torchField || torchActive) return;
+        lastTorchX = window.innerWidth * 0.5;
+        lastTorchY = window.innerHeight * 0.5;
+        currentTorchX = lastTorchX;
+        currentTorchY = lastTorchY;
+        targetTorchX = lastTorchX;
+        targetTorchY = lastTorchY;
+        currentTorchAngle = 0;
+        targetTorchAngle = 0;
+        currentTorchOpacity = 0;
+        targetTorchOpacity = 0;
+        currentTorchScale = 1;
+        targetTorchScale = 1;
+        torchVisible = false;
+        torchActive = true;
+        body.style.setProperty("--torch-x", `${currentTorchX}px`);
+        body.style.setProperty("--torch-y", `${currentTorchY}px`);
+        body.style.setProperty("--torch-angle", "0deg");
+        body.style.setProperty("--torch-opacity", "0");
+        body.style.setProperty("--torch-scale", "1");
+        body.classList.add("dark-mode-torch-active");
+        document.addEventListener("pointermove", handleTorchPointerMove, { passive: true });
+        document.addEventListener("pointerleave", hideTorchCursor);
+        window.addEventListener("blur", hideTorchCursor);
+        torchRaf = requestAnimationFrame(updateTorchCursor);
     }
 
-    function updateNavLightFlow() {
-        if (!enabled || !isDesktop()) {
-            stopNavLightFlow();
+    function stopTorchFlow() {
+        if (torchRaf) {
+            cancelAnimationFrame(torchRaf);
+            torchRaf = 0;
+        }
+        document.removeEventListener("pointermove", handleTorchPointerMove);
+        document.removeEventListener("pointerleave", hideTorchCursor);
+        window.removeEventListener("blur", hideTorchCursor);
+        body.classList.remove("dark-mode-torch-active");
+        body.style.removeProperty("--torch-x");
+        body.style.removeProperty("--torch-y");
+        body.style.removeProperty("--torch-angle");
+        body.style.removeProperty("--torch-opacity");
+        body.style.removeProperty("--torch-scale");
+        torchVisible = false;
+        torchActive = false;
+    }
+
+    function hideTorchCursor() {
+        if (!torchVisible) return;
+        torchVisible = false;
+        targetTorchOpacity = 0;
+    }
+
+    function handleTorchPointerMove(event) {
+        if (!TORCH_EXPERIMENT_ENABLED || !enabled || !isDesktop()) {
+            stopTorchFlow();
             return;
         }
 
-        const navList = document.getElementById("site-nav-list");
-        if (!navList) {
-            navLightRaf = requestAnimationFrame(updateNavLightFlow);
+        const x = clamp(event.clientX, 0, window.innerWidth);
+        const y = clamp(event.clientY, 0, window.innerHeight);
+        const dx = x - lastTorchX;
+        const dy = y - lastTorchY;
+        const speed = clamp(Math.hypot(dx, dy) / 42, 0, 1);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        const opacity = 0.56 + speed * 0.15;
+        const scale = 0.96 + speed * 0.08;
+
+        targetTorchX = x;
+        targetTorchY = y;
+        targetTorchAngle = Number.isFinite(angle) ? angle : targetTorchAngle;
+        targetTorchOpacity = opacity;
+        targetTorchScale = scale;
+
+        lastTorchX = x;
+        lastTorchY = y;
+        torchVisible = true;
+    }
+
+    function updateTorchCursor() {
+        if (!TORCH_EXPERIMENT_ENABLED || !enabled || !isDesktop()) {
+            stopTorchFlow();
             return;
         }
 
-        const rect = navList.getBoundingClientRect();
-        const links = Array.from(navList.querySelectorAll("a"));
-        const cycle = 8400;
-        const phase = ((performance.now() - navLightStartedAt) % cycle) / cycle;
-        const travel = clamp((phase - 0.12) / 0.76, 0, 1);
-        const particlePercent = 104 - easeInOut(travel) * 108;
-        const activeFade = phase < 0.12
-            ? phase / 0.12
-            : phase > 0.88
-                ? (1 - phase) / 0.12
-                : 1;
-        const particleOpacity = clamp(activeFade, 0, 1);
-        const particleX = rect.left + rect.width * (particlePercent / 100);
-        const radius = Math.max(90, Math.min(150, rect.width * 0.22));
+        currentTorchX = lerp(currentTorchX, targetTorchX, 0.2);
+        currentTorchY = lerp(currentTorchY, targetTorchY, 0.2);
+        currentTorchAngle = lerpAngle(currentTorchAngle, targetTorchAngle, 0.075);
+        currentTorchOpacity = lerp(currentTorchOpacity, targetTorchOpacity, targetTorchOpacity > currentTorchOpacity ? 0.18 : 0.12);
+        currentTorchScale = lerp(currentTorchScale, targetTorchScale, 0.12);
 
-        navList.style.setProperty("--nav-particle-x", `${particlePercent.toFixed(2)}%`);
-        navList.style.setProperty("--nav-particle-opacity", (particleOpacity * 0.74).toFixed(3));
-        navList.style.setProperty("--nav-glow-opacity", (particleOpacity * 0.46).toFixed(3));
+        body.style.setProperty("--torch-x", `${currentTorchX.toFixed(2)}px`);
+        body.style.setProperty("--torch-y", `${currentTorchY.toFixed(2)}px`);
+        body.style.setProperty("--torch-angle", `${currentTorchAngle.toFixed(2)}deg`);
+        body.style.setProperty("--torch-opacity", currentTorchOpacity.toFixed(3));
+        body.style.setProperty("--torch-scale", currentTorchScale.toFixed(3));
 
-        links.forEach((link) => {
-            const linkRect = link.getBoundingClientRect();
-            const centerX = linkRect.left + linkRect.width * 0.5;
-            const distance = Math.abs(centerX - particleX);
-            const level = Math.pow(clamp(1 - distance / radius, 0, 1), 1.8) * particleOpacity;
-            link.style.setProperty("--nav-link-light", level.toFixed(3));
-            link.style.setProperty("--nav-link-r", Math.round(126 + 110 * level));
-            link.style.setProperty("--nav-link-g", Math.round(174 + 72 * level));
-            link.style.setProperty("--nav-link-b", Math.round(124 + 106 * level));
-            link.style.setProperty("--nav-link-a", (0.3 + 0.66 * level).toFixed(3));
-            link.style.setProperty("--nav-link-shadow", (0.42 * level).toFixed(3));
-            link.style.setProperty("--nav-link-tight-glow", `${(7 * level).toFixed(2)}px`);
-            link.style.setProperty("--nav-link-wide-glow", `${(24 * level).toFixed(2)}px`);
-        });
-
-        navLightRaf = requestAnimationFrame(updateNavLightFlow);
-    }
-
-    function startNavLightFlow() {
-        if (navLightRaf) return;
-        navLightStartedAt = performance.now();
-        navLightRaf = requestAnimationFrame(updateNavLightFlow);
-    }
-
-    function stopNavLightFlow() {
-        if (navLightRaf) {
-            cancelAnimationFrame(navLightRaf);
-            navLightRaf = 0;
-        }
-        const navList = document.getElementById("site-nav-list");
-        if (!navList) return;
-        navList.style.removeProperty("--nav-particle-x");
-        navList.style.removeProperty("--nav-particle-opacity");
-        navList.style.removeProperty("--nav-glow-opacity");
-        navList.querySelectorAll("a").forEach((link) => {
-            link.style.removeProperty("--nav-link-light");
-            link.style.removeProperty("--nav-link-r");
-            link.style.removeProperty("--nav-link-g");
-            link.style.removeProperty("--nav-link-b");
-            link.style.removeProperty("--nav-link-a");
-            link.style.removeProperty("--nav-link-shadow");
-            link.style.removeProperty("--nav-link-tight-glow");
-            link.style.removeProperty("--nav-link-wide-glow");
-        });
+        torchRaf = requestAnimationFrame(updateTorchCursor);
     }
 
     function createAura(detail = {}) {
