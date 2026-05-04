@@ -21,22 +21,16 @@ window.SOUND_DESIGN_DATA = {
     ],
     game: [
         {
-            id: "frictionline",
-            brand: "Under Construction",
-            title: "Under Construction",
-            youtubeId: "ScMzIvxBSi4"
+            id: "game-audio-01",
+            brand: "Armored Core 6 Trailer",
+            title: "Sound Re-Design and Re-Score",
+            youtubeId: "Cb32Ga5DoNg"
         },
         {
-            id: "void-sector",
-            brand: "Under Construction",
-            title: "Under Construction",
-            youtubeId: "ScMzIvxBSi4"
-        },
-        {
-            id: "iron-mesh",
-            brand: "Under Construction",
-            title: "Under Construction",
-            youtubeId: "ScMzIvxBSi4"
+            id: "game-audio-02",
+            brand: "Halo 5 Cutscene",
+            title: "Sound Re-Design",
+            youtubeId: "fD6zYjii4lY"
         }
     ]
 };

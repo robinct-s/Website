@@ -2,6 +2,7 @@
     const TOGGLE_MS = 620;
     const TOGGLE_EASE = "cubic-bezier(0.22, 0.64, 0.2, 1)";
     const DIM_MS = 2450;
+    const MAX_ITEMS_PER_GROUP = 2;
     let videoModeActive = false;
 
     function makeTag(tag, className, text) {
@@ -190,11 +191,13 @@
         const commercialCount = shell.querySelector("#sd-commercial-count");
         const gameCount = shell.querySelector("#sd-game-count");
 
-        const commercialCards = renderGroup(commercialList, commercial);
-        const gameCards = renderGroup(gameList, game);
+        const visibleCommercial = commercial.slice(0, MAX_ITEMS_PER_GROUP);
+        const visibleGame = game.slice(0, MAX_ITEMS_PER_GROUP);
+        const commercialCards = renderGroup(commercialList, visibleCommercial);
+        const gameCards = renderGroup(gameList, visibleGame);
 
-        setCount(commercialCount, commercial.length);
-        setCount(gameCount, game.length);
+        setCount(commercialCount, visibleCommercial.length);
+        setCount(gameCount, visibleGame.length);
 
         const allCards = [...commercialCards, ...gameCards];
         wireCards(allCards);
