@@ -89,9 +89,16 @@ body.visitors-wash-active::before {
     transform-origin: 50% 50%;
     background:
         radial-gradient(
+            ellipse at 50% 50%,
+            rgba(255, 255, 252, 0.12) 0%,
+            rgba(255, 255, 250, 0.085) 4%,
+            rgba(255, 255, 250, 0.035) 10%,
+            rgba(255, 255, 250, 0) 18%
+        ),
+        radial-gradient(
             ellipse at 42% 48%,
-            rgba(255, 255, 250, 0.24) 0%,
-            rgba(246, 248, 239, 0.17) 13%,
+            rgba(255, 255, 250, 0.255) 0%,
+            rgba(246, 248, 239, 0.178) 13%,
             rgba(230, 236, 222, 0.095) 31%,
             rgba(217, 226, 210, 0.035) 52%,
             rgba(217, 226, 210, 0) 74%
@@ -104,23 +111,6 @@ body.visitors-wash-active::before {
         );
     filter: blur(18px) saturate(0.82);
     will-change: left, top, opacity, transform;
-}
-
-.dark-mode-torch::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    opacity: calc(var(--torch-opacity, 0) * 0.72);
-    transform: translate(-50%, -50%);
-    background: rgba(255, 255, 252, 0.72);
-    box-shadow:
-        0 0 18px rgba(255, 255, 250, 0.42),
-        0 0 52px rgba(235, 240, 226, 0.24);
-    filter: blur(2px);
 }
 
 #darkness-field {

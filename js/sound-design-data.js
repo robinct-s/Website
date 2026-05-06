@@ -1,6 +1,12 @@
 window.SOUND_DESIGN_DATA = {
     commercial: [
         {
+            id: "echo-cube-commercial",
+            brand: "Echo-Cube commercial",
+            title: "Sound Re-Design",
+            youtubeId: "oAHV92vDCFw"
+        },
+        {
             id: "aether-mobile",
             brand: "Under Construction",
             title: "Under Construction",
