@@ -123,7 +123,9 @@
             bandcamp: "https://mizuhamizuha.bandcamp.com/album/isos-five-seasons-3"
         },
         "end-sky-atlas": {
-            pending: ["soundcloud", "bandcamp", "spotify", "apple"]
+            bandcamp: "https://drumlesstrance.bandcamp.com/album/end-sky-atlas",
+            spotify: "https://open.spotify.com/album/1TBUk3tcdhRDnIePwNlo5e?si=T34qYLigRlKEs1MtGi3AcQ",
+            apple: "https://music.apple.com/us/album/end-sky-atlas/1895646032"
         }
     };
 
