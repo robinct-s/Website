@@ -48,6 +48,10 @@
             soundcloud: "https://soundcloud.com/azzrell/way-home?si=07b423b98eda45f8b915ca53c82e1b53&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing",
             bandcamp: "https://azrel1.bandcamp.com/track/way-home"
         },
+        "relay": {
+            soundcloud: "https://soundcloud.com/azzrell/sets/relay-1",
+            bandcamp: "https://azrel1.bandcamp.com/album/relay"
+        },
         "heliacal-rising": {
             spotify: "https://open.spotify.com/album/4HDaYdDB9Ojc3IThDa85it?si=UmDqtF8JTzWTLwQH2eb4IA",
             apple: "https://music.apple.com/ca/album/heliacal-rising-ep/1749062783",
@@ -257,6 +261,10 @@
             }
             if (featured) {
                 name.appendChild(makeTag("span", "track-feature", ` (+ ${featured})`));
+            }
+            if (track.physicalExclusive) {
+                item.classList.add("is-physical-exclusive");
+                name.appendChild(makeTag("span", "track-exclusive", " (Physical Exclusive)"));
             }
             item.appendChild(name);
             item.appendChild(makeTag("span", "track-time", track.duration || ""));

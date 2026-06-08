@@ -134,6 +134,27 @@ window.RELEASES_DATA = [
         ]
     },
     {
+        id: "relay",
+        catalog: "canon",
+        number: "07",
+        title: "Relay",
+        year: "2026",
+        format: "EP",
+        label: "Stasis Sound",
+        trackCount: 5,
+        artworkRef: "assets/releases/release-07-relay.png",
+        artworkCredit: "Robin Tetlow-Shooter",
+        mixCredit: "Robin Tetlow-Shooter",
+        masterCredit: "Robin Tetlow-Shooter",
+        tracks: [
+            { title: "White Glint", duration: "06:00" },
+            { title: "Shield", duration: "04:05" },
+            { title: "Dive", duration: "04:24" },
+            { title: "Evo Relay", duration: "03:53" },
+            { title: "Trace", duration: "10:00", physicalExclusive: true }
+        ]
+    },
+    {
         id: "heliacal-rising",
         catalog: "fragments",
         number: "01",

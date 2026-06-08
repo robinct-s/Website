@@ -2353,6 +2353,14 @@ body.pre-intro .player {
     letter-spacing: 0.35px;
 }
 
+.release-tracks li.is-physical-exclusive :is(.track-name, .track-time, .track-exclusive) {
+    color: rgba(36, 112, 61, 0.94);
+}
+
+.track-exclusive {
+    letter-spacing: 0.24px;
+}
+
 .track-time {
     font-size: 0.79rem;
     letter-spacing: 0.55px;
@@ -4154,6 +4162,10 @@ body.dark-mode-desktop :is(.release-card[open], .release-card.is-expanding, .rel
 body.dark-mode-desktop :is(.release-card[open], .release-card.is-expanding, .release-card.is-collapsing) .track-time,
 body.dark-mode-desktop :is(.release-card[open], .release-card.is-expanding, .release-card.is-collapsing) .release-stream-link {
     color: rgba(1, 9, 5, 0.96);
+}
+
+body.dark-mode-desktop :is(.release-card[open], .release-card.is-expanding, .release-card.is-collapsing) .release-tracks li.is-physical-exclusive :is(.track-name, .track-time, .track-exclusive) {
+    color: rgba(36, 112, 61, 0.94);
 }
 
 body.dark-mode-desktop :is(.release-card[open], .release-card.is-expanding, .release-card.is-collapsing) .release-stream-link {
