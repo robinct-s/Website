@@ -6,6 +6,11 @@ window.ABOUT_LINKS_DATA = {
             url: "https://www.instagram.com/_azrel._/"
         },
         {
+            label: "Instagram",
+            handle: "@stasis_sound",
+            url: "https://www.instagram.com/stasis_sound/"
+        },
+        {
             label: "X",
             handle: "@Azrelmusic",
             url: "https://x.com/Azrelmusic"

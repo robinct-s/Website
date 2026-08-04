@@ -3200,6 +3200,17 @@ body.pre-intro .player {
     text-align: left;
 }
 
+.installation-email-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.installation-email-link:hover,
+.installation-email-link:focus-visible {
+    color: rgba(17, 17, 17, 0.92);
+    outline: none;
+}
+
 .installation-track {
     --installation-edge-space: clamp(18px, 29vw, 580px);
     position: relative;
