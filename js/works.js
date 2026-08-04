@@ -221,6 +221,7 @@
         const facts = makeTag("dl", "release-facts");
         const factRows = [
             ["Title", release.title || ""],
+            ["Release Date", release.releaseDate || ""],
             ["Year", release.year || ""],
             ["Format", release.format || ""],
             ["Label", release.label || ""],
@@ -233,6 +234,7 @@
             factRows.splice(4, 0, ["Primary Artist", release.primaryArtist]);
         }
         factRows.forEach(([label, value]) => {
+            if (!value) return;
             const row = document.createElement("div");
             row.appendChild(makeTag("dt", "", label));
             row.appendChild(makeTag("dd", "", value));
@@ -493,6 +495,11 @@
             });
         });
     }
+
+    window.ReleaseCards = {
+        renderReleaseCard,
+        bindCardInteractions
+    };
 
     function setActiveTab(shell, tabName) {
         const tabs = Array.from(shell.querySelectorAll(".works-tab"));

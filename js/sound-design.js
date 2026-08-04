@@ -2,7 +2,7 @@
     const TOGGLE_MS = 620;
     const TOGGLE_EASE = "cubic-bezier(0.22, 0.64, 0.2, 1)";
     const DIM_MS = 2450;
-    const MAX_ITEMS_PER_GROUP = 2;
+    const MAX_ITEMS_PER_GROUP = 3;
     let videoModeActive = false;
 
     function makeTag(tag, className, text) {

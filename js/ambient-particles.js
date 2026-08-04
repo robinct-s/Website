@@ -6,6 +6,7 @@
     const IS_SAFARI = /Apple/i.test(vendor) &&
         /Safari/i.test(ua) &&
         !/Chrome|CriOS|Chromium|Edg|OPR|Firefox|FxiOS|SamsungBrowser/i.test(ua);
+    const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -16,12 +17,12 @@
     const brandLogo = document.querySelector(".brand-hero .logo");
     const logoRepulseTarget = document.getElementById("home-logo-interact") || brandLogo;
     const particles = [];
-    const particleCount = IS_SAFARI ? 46 : 90;
+    const particleCount = IS_MOBILE ? 28 : (IS_SAFARI ? 46 : 90);
     const INTERFERENCE_MIN_INTERVAL_MS = IS_SAFARI ? 76 : 32;
     const POINTER_MOVEMENT_ACTIVE_WINDOW_MS = 120;
     const POINTER_MOVE_EPSILON_PX = 0.2;
     const BEACON_PROXIMITY_MIN_INTERVAL_MS = 120;
-    const TARGET_FRAME_MS = IS_SAFARI ? 32 : 0;
+    const TARGET_FRAME_MS = IS_MOBILE ? 50 : (IS_SAFARI ? 32 : 0);
     const SCROLL_INPUT_GAIN = 0.0135;
     const SCROLL_FORCE_MAX = 6.8;
     const PARTICLE_SCROLL_INFLUENCE = 1.45;
@@ -181,6 +182,43 @@
                 const rowBase = height * 0.22 + row * rowStep;
                 tx = laneX + Math.sin(time * 0.001 + row * 0.28 + p.phase) * 22;
                 ty = rowBase + Math.cos(time * 0.00125 + col * 0.5 + p.phase) * 28;
+                break;
+            }
+            case "label": {
+                const angle = n * Math.PI * 2.8 + Math.sin(time * 0.00028 + p.phase) * 0.16;
+                const cupWidth = width * (0.14 + p.homeRadius * 0.15);
+                const cupHeight = height * (0.18 + p.homeRadius * 0.1);
+                const leftCenter = width * 0.27;
+                const rightCenter = width * 0.7;
+                const side = p.i % 2 === 0 ? -1 : 1;
+                const rim = Math.sin(n * Math.PI);
+                tx = leftCenter +
+                    side * Math.cos(angle) * cupWidth * (0.58 + rim * 0.34) +
+                    Math.sin(time * 0.00052 + p.phase) * 18;
+                ty = cy +
+                    Math.sin(angle) * cupHeight +
+                    Math.abs(Math.cos(angle)) * height * 0.035 +
+                    Math.cos(time * 0.0007 + p.phase) * 16;
+                if (p.i % 5 === 0) {
+                    tx = rightCenter + Math.sin(n * Math.PI * 8 + time * 0.0006) * width * 0.055;
+                    ty = height * (0.2 + n * 0.58) + Math.cos(time * 0.0008 + p.phase) * 24;
+                }
+                break;
+            }
+            case "physicals": {
+                const discCenterX = width * 0.68;
+                const discCenterY = height * 0.5;
+                const angle = p.homeAngle + time * 0.00016 + Math.sin(time * 0.00032 + p.phase) * 0.03;
+                const ringBase = Math.min(width, height) * (0.08 + p.homeRadius * 0.24);
+                const ringMod = Math.sin(n * Math.PI * 10 + time * 0.00022) * Math.min(width, height) * 0.012;
+                tx = discCenterX + Math.cos(angle) * (ringBase + ringMod);
+                ty = discCenterY + Math.sin(angle) * (ringBase + ringMod) * 0.96;
+                if (p.i % 9 === 0) {
+                    const innerAngle = angle * 1.18 + Math.PI * 0.28;
+                    const innerRing = Math.min(width, height) * 0.055;
+                    tx = discCenterX + Math.cos(innerAngle) * innerRing;
+                    ty = discCenterY + Math.sin(innerAngle) * innerRing;
+                }
                 break;
             }
             case "home":
@@ -421,7 +459,7 @@
             const green = mixChannel(NATURAL_GREEN.g, WHITE.g, whiteMix);
             const blue = mixChannel(NATURAL_GREEN.b, WHITE.b, whiteMix);
 
-            if (!IS_SAFARI) {
+            if (!IS_MOBILE && !IS_SAFARI) {
                 const glowAlpha = Math.min(1, p.alpha * 0.42);
                 ctx.globalAlpha = glowAlpha;
                 ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
@@ -460,7 +498,7 @@
             lastInterferenceAt = time;
         }
 
-        if (!IS_SAFARI) {
+        if (!IS_MOBILE && !IS_SAFARI) {
             const haze = ctx.createLinearGradient(0, 0, width, height);
             haze.addColorStop(0, "rgba(255, 255, 255, 0)");
             haze.addColorStop(0.45, "rgba(255, 255, 255, 0.08)");
@@ -514,6 +552,11 @@
 
     window.addEventListener("touchmove", (event) => {
         if (!event.touches || event.touches.length === 0) return;
+        if (IS_MOBILE) {
+            pointer.active = false;
+            pointerOverUi = true;
+            return;
+        }
         pointer.x = event.touches[0].clientX;
         pointer.y = event.touches[0].clientY;
         pointer.active = true;

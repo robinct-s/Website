@@ -13,6 +13,12 @@ window.SOUND_DESIGN_DATA = {
             youtubeId: "oAHV92vDCFw"
         },
         {
+            id: "spacecraft-engine",
+            brand: "Spacecraft Engine",
+            title: "Sound Design",
+            youtubeId: "G9x6N1J3cYM"
+        },
+        {
             id: "nox-banking",
             brand: "Under Construction",
             title: "Under Construction",

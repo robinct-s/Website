@@ -1,6 +1,7 @@
 const contentContainer = document.getElementById('content');
 const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-const TRANSITION_OUT_MS = 1200;
+const IS_MOBILE_VIEW = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+const TRANSITION_OUT_MS = IS_MOBILE_VIEW ? 360 : 1200;
 const LOGO_INTERACTIVE_DELAY_MS = 5600;
 let isTransitioning = false;
 let logoInteractiveTimer = null;
@@ -60,6 +61,7 @@ async function loadPage(page, options = {}) {
     isTransitioning = true;
 
     try {
+        const pageFetch = fetch(`content/${page}.html`);
         if (!initial) {
             contentContainer.classList.add('is-fading');
             await wait(TRANSITION_OUT_MS);
@@ -69,7 +71,7 @@ async function loadPage(page, options = {}) {
             document.body.dataset.page = page;
         }
 
-        const res = await fetch(`content/${page}.html`);
+        const res = await pageFetch;
         const html = await res.text();
         contentContainer.innerHTML = html;
 
@@ -107,6 +109,15 @@ document.querySelectorAll('nav a').forEach(link => {
         closeMobileMenu();
         loadPage(page);
     });
+});
+
+contentContainer.addEventListener('click', e => {
+    const link = e.target.closest('[data-link]');
+    if (!link) return;
+    const page = link.dataset.link;
+    if (!page) return;
+    e.preventDefault();
+    loadPage(page);
 });
 
 function openMobileMenu() {

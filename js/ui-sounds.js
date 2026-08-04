@@ -30,7 +30,9 @@
         pageLive: "assets/ui/page-live-load.mp3",
         pageSoundDesign: "assets/ui/page-sound-design-load.mp3",
         pageAbout: "assets/ui/page-about-load.mp3",
-        pageInstallation: "assets/ui/installation-load.mp3",
+        pageInstallation: "assets/ui/page-installation-load.mp3",
+        pagePhysical: "assets/ui/page-physical-load.mp3",
+        pageLabel: "assets/ui/page-label-load.mp3",
         installationPanel: "assets/ui/installation-load.mp3",
         darkModeOn: "assets/ui/dark-mode-on.mp3",
         lightModeOn: "assets/ui/light-mode-on.mp3"
@@ -62,14 +64,17 @@
         pageSoundDesign: 0.18,
         pageAbout: 0.18,
         pageInstallation: 0.18,
+        pagePhysical: 0.18,
+        pageLabel: 0.18,
         installationPanel: 0.16,
         darkModeOn: 0.2,
         lightModeOn: 0.18
     };
-    const PARTICLE_QUEUE_LIMIT = 12;
+    const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+    const PARTICLE_QUEUE_LIMIT = IS_MOBILE ? 0 : 12;
     const PARTICLE_QUEUE_GAP_MS = IS_SAFARI ? 90 : 55;
     const PARTICLE_AUDIO_MIN_GAP_MS = IS_SAFARI ? 120 : 75;
-    const VISITOR_WHISPER_AUDIO_GAP_MS = 90;
+    const VISITOR_WHISPER_AUDIO_GAP_MS = IS_MOBILE ? 260 : 90;
     const HOME_PRELOAD_DELAY_MS = 200;
     const IN_PAGE_HOVER_GAP_MS = 95;
     const IN_PAGE_HOVER_RATE_MIN = 0.86;
@@ -84,7 +89,7 @@
     const INTRO_LOGO_SOUND_GAP_MS = 520;
     const INTRO_SOUND_LOCK_MS = 1400;
     const HOME_SOUND_MIN_GAP_MS = 1600;
-    const MOBILE_POOL_SIZE = 3;
+    const MOBILE_POOL_SIZE = 2;
 
     let unlocked = false;
     let mutedForVideoFocus = false;
@@ -103,6 +108,8 @@
         live: "pageLive",
         "sound-design": "pageSoundDesign",
         installation: "pageInstallation",
+        physicals: "pagePhysical",
+        label: "pageLabel",
         about: "pageAbout",
         visitors: "pageAbout"
     };
@@ -117,7 +124,6 @@
     let lastIntroTouchAt = 0;
     let lastTouchLikeAt = 0;
     let introReadyForGeneralSounds = !document.body.classList.contains("pre-intro");
-    const IS_MOBILE = window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
     const SUPPORTS_POINTER = "PointerEvent" in window;
     const mobileSoundPool = {};
     const mobileSoundIndex = {};
@@ -132,15 +138,24 @@
         "playerPause",
         "pageHome"
     ]);
+    const PAGE_SOUND_TYPES = new Set(Object.values(PAGE_SOUND_BY_KEY));
+    const MOBILE_POOLED_SOUNDS = new Set([
+        "logo",
+        "menu",
+        "navClick",
+        "player",
+        "playerPlay",
+        "playerPause"
+    ]);
 
     Object.keys(UI_SOUND_SOURCES).forEach((key) => {
         const audio = new Audio();
-        audio.preload = "auto";
+        audio.preload = !IS_MOBILE || CRITICAL_SOUNDS.has(key) || PAGE_SOUND_TYPES.has(key) ? "auto" : "metadata";
         audio.src = UI_SOUND_SOURCES[key];
         audio.volume = UI_SOUND_VOLUME[key] ?? 0.2;
         baseSounds[key] = audio;
 
-        if (IS_MOBILE) {
+        if (IS_MOBILE && MOBILE_POOLED_SOUNDS.has(key)) {
             mobileSoundPool[key] = [];
             for (let i = 0; i < MOBILE_POOL_SIZE; i += 1) {
                 const pooled = new Audio();
@@ -151,6 +166,33 @@
             }
         }
     });
+
+    function loadSound(soundType) {
+        const audio = baseSounds[soundType];
+        if (audio) audio.load();
+        const pool = mobileSoundPool[soundType];
+        if (pool) {
+            pool.forEach((pooled) => pooled.load());
+        }
+    }
+
+    function getCurrentPageSoundType() {
+        const page = document.body && document.body.dataset ? document.body.dataset.page : "";
+        return PAGE_SOUND_BY_KEY[page] || "pageHome";
+    }
+
+    function scheduleMobileWarmup() {
+        if (!IS_MOBILE) return;
+        const warmup = () => {
+            PAGE_SOUND_TYPES.forEach(loadSound);
+            ["streamLink", "inWorksPageClick", "installationPanel"].forEach(loadSound);
+        };
+        if ("requestIdleCallback" in window) {
+            window.requestIdleCallback(warmup, { timeout: 1800 });
+        } else {
+            window.setTimeout(warmup, 900);
+        }
+    }
 
     function primeAudio(audio) {
         const prevVolume = audio.volume;
@@ -173,7 +215,10 @@
         if (unlocked) return;
         unlocked = true;
         // Some browsers need an interaction before short SFX can play reliably.
-        Object.keys(baseSounds).forEach((key) => {
+        const keysToPrime = IS_MOBILE
+            ? new Set([...CRITICAL_SOUNDS, getCurrentPageSoundType()])
+            : new Set(Object.keys(baseSounds));
+        keysToPrime.forEach((key) => {
             const audio = baseSounds[key];
             if (audio) primeAudio(audio);
             primedSounds.add(key);
@@ -182,6 +227,7 @@
                 if (pool && pool[0]) primeAudio(pool[0]);
             }
         });
+        scheduleMobileWarmup();
     }
 
     function preloadCriticalSoundFiles() {
@@ -320,6 +366,7 @@
     }
 
     function dispatchSoundAura(soundType, options = {}) {
+        if (IS_MOBILE) return;
         if (mutedForVideoFocus || options.skipAura) return;
         const point = getSoundAuraPoint(options);
         window.dispatchEvent(new CustomEvent("uisoundaura", {
@@ -611,6 +658,7 @@
     }
 
     function enqueueParticleSound(eventData) {
+        if (IS_MOBILE) return;
         if (mutedForVideoFocus) return;
         if (!unlocked) return;
         const intensity = Math.max(0, Math.min(1, eventData && eventData.intensity != null ? eventData.intensity : 0.5));
@@ -797,8 +845,12 @@
     window.addEventListener("pagewillchange", (event) => {
         if (!unlocked) return;
         const detail = event && event.detail ? event.detail : null;
+        if (detail && detail.page) {
+            const nextSound = PAGE_SOUND_BY_KEY[detail.page];
+            if (nextSound) loadSound(nextSound);
+        }
         if (!detail || detail.page !== "home") return;
-        // app.js waits 1200ms before loading nav pages; 200ms delay lands ~1s earlier.
+        // Home gets a small head start so it lands before the visual reset finishes.
         window.setTimeout(() => {
             playHomeSoundOnce();
         }, HOME_PRELOAD_DELAY_MS);

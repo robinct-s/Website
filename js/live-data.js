@@ -2,6 +2,12 @@ window.LIVE_EVENTS_DATA = {
     upcoming: [],
     archive: [
         {
+            name: "Genesys",
+            city: "HERE at Outernet, London UK",
+            dateIso: "2026-07-03",
+            dateLabel: "03/07/2026"
+        },
+        {
             name: "WE_WHO_BREAK",
             city: "Bush Hall, London UK",
             dateIso: "2026-04-24",
