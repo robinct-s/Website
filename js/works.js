@@ -130,6 +130,12 @@
             bandcamp: "https://drumlesstrance.bandcamp.com/album/end-sky-atlas",
             spotify: "https://open.spotify.com/album/1TBUk3tcdhRDnIePwNlo5e?si=T34qYLigRlKEs1MtGi3AcQ",
             apple: "https://music.apple.com/us/album/end-sky-atlas/1895646032"
+        },
+        "world-cup-feint": {
+            soundcloud: "https://soundcloud.com/world-cup-853504693/sets/feint",
+            bandcamp: "https://worldcuplabel.bandcamp.com/album/feint",
+            spotify: "https://open.spotify.com/album/0teNeTLmbpPKGabI5yqaYA?si=9nELBJGTRPil2w-3RtsWjA",
+            apple: "https://music.apple.com/gb/album/feint/6789426877"
         }
     };
 
