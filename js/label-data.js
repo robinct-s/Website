@@ -23,7 +23,7 @@ window.LABEL_RELEASES_DATA = [
             { title: "Sport DJ - Silktouch", duration: "3:35" },
             { title: "Real Tears - Starsign", duration: "4:29" },
             { title: "Quit Life - Forever the Same", duration: "2:18" },
-            { title: "oqbqbo - Undercount", duration: "4:56" },
+            { title: "oqbqbo - Undercut", duration: "4:56" },
             { title: "Simon K - xtacy-0333", duration: "4:30" },
             { title: "E.O.U - \u3063\uff42-.-+", duration: "5:43" },
             { title: "DJ Semitone - end of cycle music", duration: "3:15" },
