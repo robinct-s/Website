@@ -167,12 +167,6 @@
             scrollFrame = requestAnimationFrame(syncActiveToScroll);
         }, { passive: true });
 
-        track.addEventListener("wheel", (event) => {
-            if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
-            event.preventDefault();
-            event.stopPropagation();
-        }, { passive: false });
-
         window.addEventListener("resize", syncActiveToScroll);
 
         setActive(0);
