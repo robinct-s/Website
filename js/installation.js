@@ -168,9 +168,9 @@
         }, { passive: true });
 
         track.addEventListener("wheel", (event) => {
-            if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+            if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
             event.preventDefault();
-            track.scrollBy({ left: event.deltaY, behavior: "smooth" });
+            event.stopPropagation();
         }, { passive: false });
 
         window.addEventListener("resize", syncActiveToScroll);

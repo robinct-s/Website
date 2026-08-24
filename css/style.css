@@ -3216,14 +3216,15 @@ body.pre-intro .player {
     position: relative;
     width: 100vw;
     margin-left: calc(50% - 50vw);
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     scroll-padding-inline: var(--installation-edge-space);
     scrollbar-width: none;
     scrollbar-color: rgba(17, 17, 17, 0.28) transparent;
     outline: none;
-    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
 }
 
 .installation-track::-webkit-scrollbar {
@@ -3808,10 +3809,7 @@ body.pre-intro .player {
 }
 
 .about-credit {
-    position: fixed;
-    left: clamp(8px, 3vw, 56px);
-    bottom: 16px;
-    margin: 0;
+    margin: clamp(56px, 12vh, 120px) 0 0;
     max-width: min(420px, calc(100vw - 24px));
     display: inline-flex;
     align-items: center;
@@ -3823,8 +3821,6 @@ body.pre-intro .player {
     letter-spacing: 0.25px;
     text-transform: none;
     color: rgba(17, 17, 17, 0.58);
-    z-index: 8;
-    pointer-events: none;
 }
 
 .about-credit::before {
@@ -4101,7 +4097,7 @@ body.dark-mode-desktop main#content {
     z-index: auto;
 }
 
-body.dark-mode-desktop :is(.visitors-panel:not([open]), .visitor-archive-shell, .about-credit) {
+body.dark-mode-desktop :is(.visitors-panel:not([open]), .visitor-archive-shell) {
     z-index: 3;
 }
 
@@ -5366,10 +5362,8 @@ body.safari-perf.dark-mode-desktop .visitors-panel {
     }
 
     .about-credit {
-        left: 10px;
-        bottom: 10px;
         max-width: calc(100vw - 20px);
-        margin: 0;
+        margin-top: 48px;
         font-size: 0.62rem;
         line-height: 1.3;
     }

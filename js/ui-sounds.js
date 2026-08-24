@@ -89,6 +89,7 @@
     const INTRO_LOGO_SOUND_GAP_MS = 520;
     const INTRO_SOUND_LOCK_MS = 1400;
     const HOME_SOUND_MIN_GAP_MS = 1600;
+    const SCROLL_SOUND_MIN_GAP_MS = 180;
     const MOBILE_POOL_SIZE = 2;
 
     let unlocked = false;
@@ -118,6 +119,7 @@
     let lastInPageHoverRate = null;
     let lastIntroLogoSoundAt = 0;
     let lastHomeSoundAt = 0;
+    let lastScrollSoundAt = 0;
     let lastParticleAudioQueuedAt = 0;
     let lastVisitorWhisperSoundAt = 0;
     let introSoundLockUntil = 0;
@@ -797,6 +799,9 @@
 
     window.addEventListener("wheel", (event) => {
         if (!unlocked || mutedForVideoFocus) return;
+        const now = performance.now();
+        if (now - lastScrollSoundAt < SCROLL_SOUND_MIN_GAP_MS) return;
+        lastScrollSoundAt = now;
 
         const sound = createSoundInstance("scrollWheel");
         if (!sound) return;
