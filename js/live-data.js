@@ -1,5 +1,18 @@
 window.LIVE_EVENTS_DATA = {
-    upcoming: [],
+    upcoming: [
+        {
+            name: "Sucker Punch",
+            city: "XLR, Manchester UK",
+            dateIso: "2026-10-09",
+            dateLabel: "09/10/2026"
+        },
+        {
+            name: "Reves x PaT",
+            city: "Oliva, Milan IT",
+            dateIso: "2026-10-17",
+            dateLabel: "17/10/2026"
+        }
+    ],
     archive: [
         {
             name: "Genesys",
