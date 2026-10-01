@@ -155,6 +155,23 @@ window.RELEASES_DATA = [
         ]
     },
     {
+        id: "sportivo-null-horizon",
+        catalog: "canon",
+        number: "08",
+        title: "Sportivo Null Horizon",
+        year: "2026",
+        format: "Single",
+        label: "Stasis Sound",
+        trackCount: 1,
+        artworkRef: "assets/releases/release-08-sportivonullhorizon.png",
+        artworkCredit: "Robin Tetlow-Shooter",
+        mixCredit: "Robin Tetlow-Shooter",
+        masterCredit: "Etienne Lorenzi",
+        tracks: [
+            { title: "Sportivo Null Horizon", duration: "4:40" }
+        ]
+    },
+    {
         id: "heliacal-rising",
         catalog: "fragments",
         number: "01",
