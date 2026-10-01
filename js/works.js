@@ -52,6 +52,12 @@
             soundcloud: "https://soundcloud.com/azzrell/sets/relay-1",
             bandcamp: "https://azrel1.bandcamp.com/album/relay"
         },
+        "sportivo-null-horizon": {
+            soundcloud: "https://soundcloud.com/azzrell/sportivo-null-horizon-1",
+            bandcamp: "https://azrel1.bandcamp.com/track/sportivo-null-horizon",
+            spotify: "https://open.spotify.com/album/7m2sXhNQZQT8F8zm6MzMCJ?si=fCubMtTzSvSQYfmVwHcSqg",
+            apple: "https://music.apple.com/us/album/sportivo-null-horizon-single/6814722984"
+        },
         "heliacal-rising": {
             spotify: "https://open.spotify.com/album/4HDaYdDB9Ojc3IThDa85it?si=UmDqtF8JTzWTLwQH2eb4IA",
             apple: "https://music.apple.com/ca/album/heliacal-rising-ep/1749062783",
