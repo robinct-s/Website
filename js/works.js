@@ -280,6 +280,10 @@
                 item.classList.add("is-physical-exclusive");
                 name.appendChild(makeTag("span", "track-exclusive", " (Physical Exclusive)"));
             }
+            if (track.availabilityNote) {
+                item.classList.add("is-physical-exclusive");
+                name.appendChild(makeTag("span", "track-exclusive", ` (${track.availabilityNote})`));
+            }
             item.appendChild(name);
             item.appendChild(makeTag("span", "track-time", track.duration || ""));
             tracks.appendChild(item);

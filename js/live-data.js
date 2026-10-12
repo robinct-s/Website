@@ -1,12 +1,6 @@
 window.LIVE_EVENTS_DATA = {
     upcoming: [
         {
-            name: "Sucker Punch",
-            city: "XLR, Manchester UK",
-            dateIso: "2026-10-09",
-            dateLabel: "09/10/2026"
-        },
-        {
             name: "Reves x PaT",
             city: "Oliva, Milan IT",
             dateIso: "2026-10-17",
@@ -14,6 +8,12 @@ window.LIVE_EVENTS_DATA = {
         }
     ],
     archive: [
+        {
+            name: "Sucker Punch",
+            city: "XLR, Manchester UK",
+            dateIso: "2026-10-09",
+            dateLabel: "09/10/2026"
+        },
         {
             name: "Genesys",
             city: "HERE at Outernet, London UK",

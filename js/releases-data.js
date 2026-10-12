@@ -162,13 +162,14 @@ window.RELEASES_DATA = [
         year: "2026",
         format: "Single",
         label: "Stasis Sound",
-        trackCount: 1,
+        trackCount: 2,
         artworkRef: "assets/releases/release-08-sportivonullhorizon.png",
         artworkCredit: "Robin Tetlow-Shooter",
         mixCredit: "Robin Tetlow-Shooter",
         masterCredit: "Etienne Lorenzi",
         tracks: [
-            { title: "Sportivo Null Horizon", duration: "4:40" }
+            { title: "Sportivo Null Horizon", duration: "4:40" },
+            { title: "Sportivo Null Horizon - Kirk Remix", availabilityNote: "SoundCloud/Bandcamp only", duration: "4:38" }
         ]
     },
     {
